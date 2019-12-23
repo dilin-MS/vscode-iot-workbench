@@ -39,11 +39,15 @@ script:
 - docker run -ti --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `ls *.md`
 
 before_deploy:
-# Set up git user name and tag this commit
-- git config --local user.name "dilin-MS"
-- git config --local user.email "dilin@microsoft"
-- export TRAVIS_TAG=${TRAVIS_TAG:-"nightly-build"}
-- git tag $TRAVIS_TAG
+# Set up git user name and tag this commit if nightly build
+if [[ $TRAVIS_EVENT_TYPE == "cron" ]]; then
+  git config --local user.name "dilin-MS" &&
+  git config --local user.email "dilin@microsoft" &&
+  export TRAVIS_TAG="nightly-build" &&
+  if [[ `git ls-remote --exit-code origin refs/tags/nightly-build` ]]; 
+    then git tag $TRAVIS_TAG; 
+  fi
+fi
 
 deploy:
   # deploy to github release
