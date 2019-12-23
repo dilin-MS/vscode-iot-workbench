@@ -40,10 +40,12 @@ script:
 
 before_deploy:
   # Set up git user name and tag this commit
-  - git config --local user.name "dilin-MS"
-  - git config --local user.email "dilin@microsoft.com"
-  - export TRAVIS_TAG=${TRAVIS_TAG:-"nightly-build"}
-  - git tag $TRAVIS_TAG
+  if ! [[ $TRAVIS_TAG ]]; then
+    export TRAVIS_TAG="nightly-build" &&
+    git config --local user.name "dilin-MS" &&
+    git config --local user.email "dilin@microsoft.com" &&
+    git tag "$TRAVIS_TAG";
+  fi
 
 deploy:
   # deploy to github release
