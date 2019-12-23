@@ -39,12 +39,11 @@ script:
 - docker run -ti --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `ls *.md`
 
 before_deploy:
-  - echo "before_deploy"
-# # Set up git user name and tag this commit
-# - git config --local user.name "dilin-MS"
-# - git config --local user.email "dilin@microsoft"
-# - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
-# - git tag $TRAVIS_TAG
+# Set up git user name and tag this commit
+- git config --local user.name "dilin-MS"
+- git config --local user.email "dilin@microsoft"
+- export TRAVIS_TAG=${TRAVIS_TAG:-"nightly-build"}
+- git tag $TRAVIS_TAG
 
 deploy:
   # deploy to github release
@@ -56,7 +55,7 @@ deploy:
     on:
       tags: true
       all_branches: true
-      condition: $TRAVIS_TAG =~ $ISPRODTAG OR $TRAVIS_TAG =~ $ISTESTTAG
+      condition: "$TRAVIS_TAG =~ $ISPRODTAG" OR "$TRAVIS_TAG =~ $ISTESTTAG"
   # deploy to vscode extension market
   - provider: script  
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
@@ -65,7 +64,7 @@ deploy:
       tags: true
       all_branches: true
       # if it's a PROD tag (something like 1.0.0), then publish extension to market.
-      condition: $TRAVIS_TAG =~ $ISPRODTAG
+      condition: "$TRAVIS_TAG =~ $ISPRODTAG"
   # deploy test version to vscode extension market
   - provider: script
     script: yes | vsce unpublish -p $VSCE_TEST_TOKEN $RC_EXTENSION_ID && vsce publish -p $VSCE_TEST_TOKEN --packagePath *.vsix
@@ -74,7 +73,7 @@ deploy:
       tags: true
       all_branches: true
       # if it's a test version tag (something like 1.0.0-rc), then publish test extension to market.
-      condition: $TRAVIS_TAG =~ $ISTESTTAG
+      condition: "$TRAVIS_TAG =~ $ISTESTTAG"
   # deploy nightly build to github release
   - provider: releases
     api_key: $GIT_TOKEN
@@ -84,4 +83,4 @@ deploy:
     skip_cleanup: true
     on:
       all_branches: develop
-      condition: $TRAVIS_EVENT_TYPE = "cron"
+      condition: "$TRAVIS_EVENT_TYPE = 'cron'"
