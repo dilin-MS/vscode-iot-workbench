@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 if (process.env.TRAVIS_EVENT_TYPE === "cron") {
     const packageJson = JSON.parse(fs.readFileSync('package.json'));
 

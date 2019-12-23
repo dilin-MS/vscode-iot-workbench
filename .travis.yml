@@ -66,3 +66,13 @@ deploy:
       all_branches: true
       # if it's a test version tag (something like 1.0.0-rc), then publish test extension to market.
       condition: "$TRAVIS_TAG =~ $ISTESTTAG"
+  # deploy nightly build to github release
+  - provider: releases
+    api_key: $GIT_TOKEN
+    overwrite: true
+    file_glob: true
+    file: "*.vsix"
+    skip_cleanup: true
+    on:
+      all_branches: develop
+      condition: "$TRAVIS_EVENT_TYPE = 'cron'"
