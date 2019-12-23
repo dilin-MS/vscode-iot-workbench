@@ -55,7 +55,7 @@ deploy:
     on:
       tags: true
       all_branches: true
-      condition: "$TRAVIS_TAG =~ $ISPRODTAG" OR "$TRAVIS_TAG =~ $ISTESTTAG"
+      condition: "$TRAVIS_TAG =~ $ISPRODTAG OR $TRAVIS_TAG =~ $ISTESTTAG"
   # deploy to vscode extension market
   - provider: script  
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
