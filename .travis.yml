@@ -32,10 +32,7 @@ script:
 - tsc --version
 - gts --version
 - gts check
-- node scripts/modifyConfigIfRCVersion.js
-- node scripts/updateResourceLink.js
-- node scripts/genAiKey.js
-- node scripts/nightlyBuild.js
+- node scripts/updateConfig.js
 - vsce package
 - docker run -ti --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `ls *.md`
 
@@ -45,8 +42,8 @@ before_deploy:
       git config --local user.name $USER_NAME &&
       git config --local user.email $USER_EMAIL &&
       git remote set-url origin https://dilin-MS:$GIT_TOKEN@github.com/dilin-MS/vscode-iot-workbench.git &&
-      export TRAVIS_TAG="nightly-build1" &&
-      if [[ `git ls-remote --exit-code origin refs/tags/nightly-build1` ]]; then git push --delete origin $TRAVIS_TAG; fi &&
+      export TRAVIS_TAG="nightly-build" &&
+      if [[ `git ls-remote --exit-code origin refs/tags/nightly-build` ]]; then git push --delete origin $TRAVIS_TAG; fi &&
       git tag -f $TRAVIS_TAG &&
       git push --tags -f;
     fi
