@@ -60,6 +60,16 @@ deploy:
     on:
       tags: true
       all_branches: true
+  # deploy nightly build to github release
+  - provider: releases
+    api_key: $GIT_TOKEN
+    overwrite: true
+    file_glob: true
+    file: "*.vsix"
+    skip_cleanup: true
+    on:
+      all_branches: develop
+      condition: "$TRAVIS_EVENT_TYPE = 'cron'"
   # deploy to vscode extension market
   - provider: script  
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
@@ -78,12 +88,9 @@ deploy:
       all_branches: true
       # if it's a test version tag (something like 1.0.0-rc), then publish test extension to market.
       condition: "$TRAVIS_TAG =~ $ISTESTTAG"
-  # deploy nightly build to github release
-  - provider: releases
-    api_key: $GIT_TOKEN
-    overwrite: true
-    file_glob: true
-    file: "*.vsix"
+  # deploy nightly version to vscode extension market
+  - provider: script
+    script: yes | vsce unpublish -p $VSCE_TEST_TOKEN $RC_EXTENSION_ID && vsce publish -p $VSCE_TEST_TOKEN --packagePath *.vsix
     skip_cleanup: true
     on:
       all_branches: develop
