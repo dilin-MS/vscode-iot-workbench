@@ -69,7 +69,7 @@ deploy:
     file: "*.vsix"
     skip_cleanup: true
     on:
-      all_branches: develop
+      branch: develop
       condition: "$TRAVIS_EVENT_TYPE = 'cron'"
   # deploy to vscode extension market
   - provider: script  
@@ -94,5 +94,5 @@ deploy:
     script: yes | vsce unpublish -p $VSCE_TOKEN $NIGHTLY_BUILD_ID && vsce publish -p $VSCE_TOKEN --packagePath *.vsix
     skip_cleanup: true
     on:
-      all_branches: develop
+      branch: develop
       condition: "$TRAVIS_EVENT_TYPE = 'cron'"
