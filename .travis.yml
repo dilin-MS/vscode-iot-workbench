@@ -91,7 +91,7 @@ deploy:
       condition: "$TRAVIS_TAG =~ $ISTESTTAG"
   # deploy nightly version to vscode extension market
   - provider: script
-    script: yes | vsce unpublish -p $VSCE_TEST_TOKEN $NIGHTLY_BUILD_ID && vsce publish -p $VSCE_TEST_TOKEN --packagePath *.vsix
+    script: yes | vsce unpublish -p $VSCE_TOKEN $NIGHTLY_BUILD_ID && vsce publish -p $VSCE_TOKEN --packagePath *.vsix
     skip_cleanup: true
     on:
       all_branches: develop
