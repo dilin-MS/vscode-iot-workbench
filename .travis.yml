@@ -43,6 +43,7 @@ before_deploy:
   - if [[ $TRAVIS_EVENT_TYPE == "cron" ]]; then
       git config --local user.name "dilin-MS" &&
       git config --local user.email "dilin@microsoft.com" &&
+      git remote set-url origin https://dilin-MS:$GIT_TOKEN@github.com/dilin-MS/vscode-iot-workbench.git &&
       export TRAVIS_TAG="nightly-build" &&
       if [[ `git ls-remote --exit-code origin refs/tags/nightly-build` ]]; then git push --delete origin $TRAVIS_TAG; fi &&
       git tag -f $TRAVIS_TAG &&
