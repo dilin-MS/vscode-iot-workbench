@@ -34,11 +34,7 @@ script:
 - gts check
 - node scripts/updateConfig.js
 - vsce package
-- docker run -ti --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `ls *.md`
-
-before_deploy:
-  # Set up git user name and tag this commit if nightly build
-  - if [[ $TRAVIS_EVENT_TYPE == "cron" ]]; then
+- if [[ $TRAVIS_EVENT_TYPE == "cron" ]]; then
       git config --local user.name $USER_NAME &&
       git config --local user.email $USER_EMAIL &&
       git remote set-url origin https://dilin-MS:$GIT_TOKEN@github.com/dilin-MS/vscode-iot-workbench.git &&
@@ -47,6 +43,7 @@ before_deploy:
       git tag -f $TRAVIS_TAG &&
       git push --tags -f;
     fi
+- docker run -ti --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `ls *.md`
 
 deploy:
   # deploy to github release
@@ -58,6 +55,16 @@ deploy:
     on:
       tags: true
       all_branches: true
+  # deploy nightly build to github release
+  - provider: releases
+    api_key: $GIT_TOKEN
+    overwrite: true
+    file_glob: true
+    file: "*.vsix"
+    skip_cleanup: true
+    on:
+      branch: develop
+      condition: "$TRAVIS_EVENT_TYPE = 'cron'"
   # deploy to vscode extension market
   - provider: script  
     script: vsce publish -p $VSCE_TOKEN --packagePath *.vsix
@@ -79,16 +86,6 @@ deploy:
   # deploy nightly version to vscode extension market
   - provider: script
     script: yes | vsce unpublish -p $VSCE_TOKEN $NIGHTLY_BUILD_ID && vsce publish -p $VSCE_TOKEN --packagePath *.vsix
-    skip_cleanup: true
-    on:
-      branch: develop
-      condition: "$TRAVIS_EVENT_TYPE = 'cron'"
-  # deploy nightly build to github release
-  - provider: releases
-    api_key: $GIT_TOKEN
-    overwrite: true
-    file_glob: true
-    file: "*.vsix"
     skip_cleanup: true
     on:
       branch: develop
