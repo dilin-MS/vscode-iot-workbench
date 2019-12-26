@@ -23,7 +23,8 @@ env:
     - RC_EXTENSION_ID="iotdevexbuild.test-owl-project"
     - NIGHTLY_BUILD_ID="dilin.vscode-iot-workbench-nightly"
     - NIGHTLY_BUILD_TAG="nightly-build"
-    - IS_PROD=false
+    # Non production situation: RC or nightly build
+    - IS_TEST=true
 
 install:
 - sudo apt-get install libsecret-1-dev
@@ -35,8 +36,7 @@ script:
 - gts --version
 - gts check
 - node scripts/updateConfig.js
-- vsce package
-- if [[ $TRAVIS_TAG =~ $ISPRODTAG ]]; then export IS_PROD=true; fi
+- if [[ $TRAVIS_TAG =~ $ISPRODTAG ]]; then export IS_TEST=false; fi
 - if [[ $TRAVIS_EVENT_TYPE == "cron" ]]; then
     git config --local user.name $USER_NAME &&
     git config --local user.email $USER_EMAIL &&
@@ -45,13 +45,14 @@ script:
     nightlyBuildTagExists=`git ls-remote --exit-code origin refs/tags/$NIGHTLY_BUILD_TAG` && nightlyBuildCommit=`git rev-list -n 1 $NIGHTLY_BUILD_TAG` &&
     if [[ $nightlyBuildTagExists && $nightlyBuildCommit != $TRAVIS_COMMIT ]]; then git push --delete origin $TRAVIS_TAG && git tag -f $TRAVIS_TAG && git push --tags -f; fi
   fi
+- vsce package
 - docker run -ti --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `ls *.md`
 
 deploy:
   # deploy to github release
   - provider: releases
     api_key: $GIT_TOKEN
-    prerelease: $IS_PROD
+    prerelease: $IS_TEST
     file_glob: true
     file: "*.vsix"
     skip_cleanup: true
@@ -77,7 +78,7 @@ deploy:
       tags: true
       all_branches: true
       # if it's a PROD tag (something like 1.0.0), then publish extension to market.
-      condition: "$IS_PROD = true"
+      condition: " $TRAVIS_TAG =~ $ISPRODTAG"
   # deploy test version to vscode extension market
   - provider: script
     script: yes | vsce unpublish -p $VSCE_TEST_TOKEN $RC_EXTENSION_ID && vsce publish -p $VSCE_TEST_TOKEN --packagePath *.vsix
