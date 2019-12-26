@@ -36,7 +36,7 @@ script:
 - gts check
 - node scripts/updateConfig.js
 - vsce package
-- if [[ $TRAVIS_TAG =~ $ISPRODTAG ]]; then export IS_PROD=true; if
+- if [[ $TRAVIS_TAG =~ $ISPRODTAG ]]; then export IS_PROD=true; fi
 - if [[ $TRAVIS_EVENT_TYPE == "cron" ]]; then
     git config --local user.name $USER_NAME &&
     git config --local user.email $USER_EMAIL &&
