@@ -98,6 +98,7 @@ deploy:
 
 notifications:
   email:
+    if: $TRAVIS_EVENT_TYPE = 'cron'
     recipients:
       - dilin@microsoft.com
     on_success: always
