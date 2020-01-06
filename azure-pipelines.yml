@@ -47,6 +47,10 @@ jobs:
     name: Hosted macOS
     demands: npm
   steps:
+  - task: UseNode@1
+    displayName: 'Install node version >=12.0.0'
+    inputs:
+      version: '>=12.0.0'
   - task: Npm@1
     displayName: 'Install dependencies'
     inputs:
