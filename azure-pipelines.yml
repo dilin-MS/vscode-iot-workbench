@@ -40,7 +40,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
-      artifactName: drop1
+      artifactName: workbench-windows-drop
 
 - job: macOS
   pool:
@@ -77,6 +77,8 @@ jobs:
       customCommand: 'run compile'
   - script: sudo npm install -g vsce
     displayName: 'install vsce'
+  - script: sudo npm install -g gts
+    displayName: 'install gts'
   - script: gts check
     displayName: 'check gts error'
     failOnStderr: True
@@ -93,4 +95,4 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
-      artifactName: drop1
+      artifactName: workbench-ubuntu-1604-drop
