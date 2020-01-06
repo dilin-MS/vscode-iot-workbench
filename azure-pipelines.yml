@@ -1,10 +1,16 @@
 trigger:
-- master
+  branches:
+    include:
+    - master
+    - develop
+
 jobs:
 - job: Windows
+
   pool:
     name: Hosted VS2017
     demands: npm
+
   steps:
   - task: Npm@1
     displayName: 'Install dependencies'
@@ -21,8 +27,8 @@ jobs:
   - script: gts check
     displayName: 'check gts error'
     failOnStderr: True
-  - script: node updateDynamicResourceLink.js
-    displayName: 'Update link for code generator'
+  - script: node scripts/updateConfigIfProduction.js
+    displayName: 'Update configuration in package.json for production'
   - script: vsce package
     displayName: 'Build VSIX package'
   - task: CopyFiles@2
@@ -35,6 +41,7 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
       artifactName: drop1
+
 - job: macOS
   pool:
     name: Hosted macOS
@@ -50,6 +57,7 @@ jobs:
       command: custom
       verbose: false
       customCommand: 'run compile'
+
 - job: Linux
   pool:
     name: Hosted Ubuntu 1604
