@@ -131,6 +131,8 @@ jobs:
       tagSource: 'gitTag'
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
-  - bash: vsce publish -p $DILIN_MARKETPLACE_TOKEN --packagePath *.vsix
+  - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
     workingDirectory: '$(Build.ArtifactStagingDirectory)/workbench-ubuntu-1604-drop'
     displayname: 'Deploy linux vsix to marketplace'
+    env:
+      MARKETPLACE_TOKEN: $(dilin_marketplace_token)
