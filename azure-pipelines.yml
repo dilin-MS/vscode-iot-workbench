@@ -77,9 +77,7 @@ jobs:
       customCommand: 'run compile'
   - script: sudo npm install -g vsce
     displayName: 'install vsce'
-  - script: sudo npm install -g gts
-    displayName: 'install gts'
-  - script: gts check
+  - script: node node_modules/gts/build/src/cli.js check
     displayName: 'check gts error'
     failOnStderr: True
   - script: node scripts/updateConfigIfProduction.js
