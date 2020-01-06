@@ -41,6 +41,15 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
       artifactName: workbench-windows-drop
+  - task: GitHubRelease@1
+    inputs:
+      gitHubConnection: 'dilin-ms-test'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'gitTag'
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
 
 - job: macOS
   pool:
@@ -88,7 +97,7 @@ jobs:
     inputs:
       SourceFolder: '$(System.DefaultWorkingDirectory)'
       Contents: |
-        **\*.vsix
+        **/*.vsix
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
   - task: PublishBuildArtifacts@1
     inputs:
