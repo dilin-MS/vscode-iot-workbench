@@ -132,5 +132,5 @@ jobs:
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
   - bash: |
-      vsce publish -p $(dilin_marketplace_token) --packagePath $(System.ArtifactStagingDirectory)/workbench-ubuntu-1604-drop/*.vsix
+      vsce publish -p $DILIN_MARKETPLACE_TOKEN --packagePath $(System.ArtifactStagingDirectory)/workbench-ubuntu-1604-drop/*.vsix
     displayname: Deploy linux vsix to marketplace
