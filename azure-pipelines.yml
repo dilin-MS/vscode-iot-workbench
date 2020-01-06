@@ -41,15 +41,6 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
       artifactName: workbench-windows-drop
-  - task: GitHubRelease@1
-    inputs:
-      gitHubConnection: 'dilin-ms-test'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'create'
-      target: '$(Build.SourceVersion)'
-      tagSource: 'gitTag'
-      changeLogCompareToRelease: 'lastFullRelease'
-      changeLogType: 'commitBased'
 
 - job: macOS
   pool:
@@ -122,6 +113,7 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: workbench-ubuntu-1604-drop
+  # Deploy to Github Release
   - task: GitHubRelease@1
     inputs:
       gitHubConnection: 'dilin-ms-test'
@@ -131,7 +123,9 @@ jobs:
       tagSource: 'gitTag'
       changeLogCompareToRelease: 'lastFullRelease'
       changeLogType: 'commitBased'
+  # Deploy to production marketplace
   - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
     workingDirectory: '$(Build.ArtifactStagingDirectory)/workbench-ubuntu-1604-drop'
+    displayName: 'Deploy to production marketplace'
     env:
       MARKETPLACE_TOKEN: $(dilin_marketplace_token)
