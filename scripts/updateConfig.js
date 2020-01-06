@@ -12,8 +12,8 @@ if (process.env.TRAVIS_EVENT_TYPE === "cron" || process.env.TRAVIS_TAG) {
 
   // Nightly Build
   if (process.env.TRAVIS_EVENT_TYPE === "cron") {
-    const nightlyBuildName = "test-owl-project-nightly";
-    const nightlyBuildDisplayName = "Test OWL Project (Nightly)";
+    const nightlyBuildName = "test-hawk-project-nightly";
+    const nightlyBuildDisplayName = "Test HAWK Project (Nightly)";
     const nightlyBuildPublisher = "dilin";
     modifyPackageJsonForNonProduction(packageJson, nightlyBuildName, nightlyBuildDisplayName, nightlyBuildPublisher);
   } else if (process.env.TRAVIS_TAG) {
@@ -35,7 +35,7 @@ if (process.env.TRAVIS_EVENT_TYPE === "cron" || process.env.TRAVIS_TAG) {
 
       // Modify extensionId in template files
       const extensionIdPattern = /vsciot-vscode.vscode-iot-workbench/g;
-      const rcExtensionId = 'iotdevexbuild.test-owl-project';
+      const rcExtensionId = 'iotdevexbuild.test-hawk-project';
 
       const arm7DevcontainerJsonFile = "resources/templates/arm7/devcontainer.json";
       const arm8DevcontainerJsonFile = "resources/templates/arm8/devcontainer.json";

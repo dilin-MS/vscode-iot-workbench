@@ -1,6 +1,6 @@
 {
-  "name": "vscode-iot-workbench",
-  "displayName": "Azure IoT Device Workbench",
+  "name": "test-hawk-project",
+  "displayName": "Test Hawk Project",
   "description": "This extension is now a part of Azure IoT Tools extension pack. We highly recommend installing Azure IoT Tools to get full capabilities for Azure IoT development.",
   "repository": {
     "type": "git",
