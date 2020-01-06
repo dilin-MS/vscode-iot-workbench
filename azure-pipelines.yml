@@ -28,7 +28,7 @@ jobs:
     displayName: 'check gts error'
     failOnStderr: True
   - script: node scripts/updateConfigIfProduction.js
-    displayName: 'Update configuration in package.json for production'
+    displayName: 'Update configuration for production'
   - script: vsce package
     displayName: 'Build VSIX package'
   - task: CopyFiles@2
@@ -66,6 +66,25 @@ jobs:
       command: custom
       verbose: false
       customCommand: 'run compile'
+  - script: sudo npm install -g vsce
+    displayName: 'install vsce'
+  - script: node node_modules/gts/build/src/cli.js check
+    displayName: 'check gts error'
+    failOnStderr: True
+  - script: node scripts/updateConfigIfProduction.js
+    displayName: 'Update configuration for production'
+  - script: vsce package
+    displayName: 'Build VSIX package'
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(System.DefaultWorkingDirectory)'
+      Contents: |
+        **/*.vsix
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
+      artifactName: workbench-macos-drop
 
 - job: Linux
 
@@ -90,7 +109,7 @@ jobs:
     displayName: 'check gts error'
     failOnStderr: True
   - script: node scripts/updateConfigIfProduction.js
-    displayName: 'Update configuration in package.json for production'
+    displayName: 'Update configuration for production'
   - script: vsce package
     displayName: 'Build VSIX package'
   - task: CopyFiles@2
@@ -101,5 +120,17 @@ jobs:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: workbench-ubuntu-1604-drop
+  - task: GitHubRelease@1
+    inputs:
+      gitHubConnection: 'dilin-ms-test'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'gitTag'
+      changeLogCompareToRelease: 'lastFullRelease'
+      changeLogType: 'commitBased'
+  - bash: |
+      vsce publish -p $(dilin_marketplace_token) --packagePath $(System.ArtifactStagingDirectory)/workbench-ubuntu-1604-drop/*.vsix
+    displayname: Deploy linux vsix to marketplace
