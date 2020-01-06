@@ -75,7 +75,7 @@ jobs:
       command: custom
       verbose: false
       customCommand: 'run compile'
-  - script: npm install -g vsce
+  - script: sudo npm install -g vsce
     displayName: 'install vsce'
   - script: gts check
     displayName: 'check gts error'
