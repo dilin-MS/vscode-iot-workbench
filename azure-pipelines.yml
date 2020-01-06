@@ -133,5 +133,6 @@ jobs:
       changeLogType: 'commitBased'
   - bash: |
       echo $SYSTEM_ARTIFACTSTAGINGDIRECTORY
-      vsce publish -p $DILIN_MARKETPLACE_TOKEN --packagePath $SYSTEM_ARTIFACTSTAGINGDIRECTORY/workbench-ubuntu-1604-drop/*.vsix
+      vsce publish -p $DILIN_MARKETPLACE_TOKEN --packagePath *.vsix
+    workingDirectory: '$SYSTEM_ARTIFACTSTAGINGDIRECTORY/workbench-ubuntu-1604-drop'
     displayname: 'Deploy linux vsix to marketplace'
