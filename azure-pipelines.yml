@@ -1,4 +1,3 @@
-# Azure Pipeline yaml file for production
 trigger:
   branches:
     include:
