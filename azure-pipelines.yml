@@ -109,8 +109,8 @@ jobs:
   #   failOnStderr: True
 
   - bash: |
-      is_prod_tag=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
-      is_test_tag=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]
+      is_prod_tag=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
+      is_test_tag=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]
       echo "is_prod_tag: $is_prod_tag"
       echo "is_test_tag: $is_test_tag"
       echo "##########"
