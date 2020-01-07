@@ -151,7 +151,7 @@ jobs:
       artifactName: workbench-ubuntu-1604-drop
   # Deploy to Github Release
   - task: GitHubRelease@0
-    condition: and(succeeded(), eq($(is_tag), true))
+    condition: and(succeeded(), eq(variables['is_tag'], 'true'))
     inputs:
       gitHubConnection: 'dilin-ms-test'
       repositoryName: '$(Build.Repository.Name)'
@@ -162,4 +162,4 @@ jobs:
     displayName: 'Deploy to production marketplace'
     env:
       MARKETPLACE_TOKEN: $(marketplace_token)
-    condition: and(succeeded(), eq($(is_tag), true))
+    condition: and(succeeded(), eq(variables['is_tag'], 'true'))
