@@ -104,6 +104,7 @@ jobs:
     failOnStderr: True
   - bash: |
       echo "BUILD_SOURCEBRANCH: $BUILD_SOURCEBRANCH"
+      echo "DILIN_MARKETPLACE_TOKEN: $DILIN_MARKETPLACE_TOKEN"
       is_prod_tag=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
       is_test_tag=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]
       [[ $BUILD_SOURCEBRANCH =~ $is_prod_tag ]] && is_prod=true && marketplace_token=$DILIN_MARKETPLACE_TOKEN
@@ -125,6 +126,7 @@ jobs:
       # Set job variable
       echo "##vso[task.setvariable variable=is_prod]$is_prod"
       echo "##vso[task.setvariable variable=is_test]$is_test"
+      echo "##vso[task.setvariable variable=marketplace_token]$marketplace_token"
       echo "##vso[task.setvariable variable=deploy_to_github_release]$deploy_to_github_release"
       echo "##vso[task.setvariable variable=deploy_to_marketplace]$deploy_to_marketplace"
   - script: node scripts/updateConfig.js
