@@ -47,43 +47,43 @@ jobs:
 #       artifactName: workbench-windows-drop
 
 # - job: macOS
-  pool:
-    name: Hosted macOS
-    demands: npm
-  steps:
-  - task: UseNode@1
-    displayName: 'Install node version >=12.0.0'
-    inputs:
-      version: '>=12.0.0'
-  - task: Npm@1
-    displayName: 'Install dependencies'
-    inputs:
-      verbose: false
-  - task: Npm@1
-    displayName: 'Compile sources'
-    inputs:
-      command: custom
-      verbose: false
-      customCommand: 'run compile'
-  - script: sudo npm install -g vsce
-    displayName: 'install vsce'
-  - script: node node_modules/gts/build/src/cli.js check
-    displayName: 'check gts error'
-    failOnStderr: True
-  - script: node scripts/updateConfigIfProduction.js
-    displayName: 'Update configuration for production'
-  - script: vsce package
-    displayName: 'Build VSIX package'
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: '$(System.DefaultWorkingDirectory)'
-      Contents: |
-        **/*.vsix
-      TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
-      artifactName: workbench-macos-drop
+  # pool:
+  #   name: Hosted macOS
+  #   demands: npm
+  # steps:
+  # - task: UseNode@1
+  #   displayName: 'Install node version >=12.0.0'
+  #   inputs:
+  #     version: '>=12.0.0'
+  # - task: Npm@1
+  #   displayName: 'Install dependencies'
+  #   inputs:
+  #     verbose: false
+  # - task: Npm@1
+  #   displayName: 'Compile sources'
+  #   inputs:
+  #     command: custom
+  #     verbose: false
+  #     customCommand: 'run compile'
+  # - script: sudo npm install -g vsce
+  #   displayName: 'install vsce'
+  # - script: node node_modules/gts/build/src/cli.js check
+  #   displayName: 'check gts error'
+  #   failOnStderr: True
+  # - script: node scripts/updateConfigIfProduction.js
+  #   displayName: 'Update configuration for production'
+  # - script: vsce package
+  #   displayName: 'Build VSIX package'
+  # - task: CopyFiles@2
+  #   inputs:
+  #     SourceFolder: '$(System.DefaultWorkingDirectory)'
+  #     Contents: |
+  #       **/*.vsix
+  #     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  # - task: PublishBuildArtifacts@1
+  #   inputs:
+  #     pathtoPublish: '$(Build.ArtifactStagingDirectory)'  
+  #     artifactName: workbench-macos-drop
 
 - job: Linux
 
