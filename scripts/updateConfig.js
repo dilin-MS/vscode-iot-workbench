@@ -7,30 +7,31 @@ const fs = require('fs');
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+$/:          Production release (eg. v0.10.18)
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]/:  RC release (eg. v0.10.18-rc, v0.10.18-rc2, etc.)
  */
-console.log("process.env.DEPLOY_TO_MARKETPLACE");
-console.log(process.env.DEPLOY_TO_MARKETPLACE);
-
-console.log("process.env.DEPLOY_TO_GITHUB_RELEASE");
-console.log(process.env.DEPLOY_TO_GITHUB_RELEASE);
-
 if (process.env.DEPLOY_TO_MARKETPLACE === "true") {
   const packageJson = JSON.parse(fs.readFileSync('package.json'));
 
   // Nightly Build
   if (process.env.BUILD_REASON === "Schedule") {
+    console.log("nightly build");
     const nightlyBuildName = "test-hawk-project-nightly";
     const nightlyBuildDisplayName = "Test HAWK Project (Nightly)";
     const nightlyBuildPublisher = "dilin";
     modifyPackageJsonForNonProduction(packageJson, nightlyBuildName, nightlyBuildDisplayName, nightlyBuildPublisher);
   } else if (process.env.IS_PROD) {
+    console.log("process.env.IS_PROD");
+    console.log(process.env.IS_PROD);
+
     // Update resource link
     const codeGenUrl = "https://aka.ms/iot-codegen-cli-for-workbench";
     packageJson.codeGenConfigUrl = codeGenUrl;
 
     // Update production AI Key
-    packageJson.aiKey = process.env['PROD_AIKEY'];
+    packageJson.aiKey = process.env.PROD_AIKEY;
 
   } else if (process.env.IS_TEST) {
+    console.log("process.env.IS_TEST");
+    console.log(process.env.IS_TEST);
+
     const testName = "test-hawk-project-rc";
     const testDisplayName = "Test HAWK Project RC";
     const testPublisher = "dilin";
@@ -67,7 +68,7 @@ function modifyPackageJsonForNonProduction(packageJson, testName, testDisplayNam
   packageJson.displayName = testDisplayName;
   packageJson.publisher = testPublisher;
 
-  packageJson.aiKey = process.env['TEST_AIKEY'];
+  packageJson.aiKey = process.env.TEST_AIKEY;
 
   const indexOfDash = packageJson.version.indexOf('-');
   if (indexOfDash > 0) {

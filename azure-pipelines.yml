@@ -103,8 +103,6 @@ jobs:
     displayName: 'check gts error'
     failOnStderr: True
   - bash: |
-      echo "BUILD_SOURCEBRANCH: $BUILD_SOURCEBRANCH"
-      echo "DILIN_MARKETPLACE_TOKEN: $DILIN_MARKETPLACE_TOKEN"
       is_prod_tag=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
       is_test_tag=^refs\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]
       [[ $BUILD_SOURCEBRANCH =~ $is_prod_tag ]] && is_prod=true && marketplace_token=$DILIN_MARKETPLACE_TOKEN
@@ -112,16 +110,6 @@ jobs:
       if [[ "$BUILD_REASON" == "Schedule" ]]; then marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN; fi
       if [[ "$is_prod" == "true" || "$is_test" == "true" ]]; then deploy_to_github_release=true; fi
       if [[ "$is_prod" == "true" || "$is_test" == "true" || "$BUILD_REASON" == "Schedule" ]]; then deploy_to_marketplace=true; fi
-
-      echo "is_prod: $is_prod"
-      echo "is_test: $is_test"
-      echo "deploy_to_github_release: $deploy_to_github_release"
-      echo "deploy_to_marketplace: $deploy_to_marketplace"
-      echo "is_nightly_build: $is_nightly_build"
-      echo "DILIN_MARKETPLACE_TOKEN: $DILIN_MARKETPLACE_TOKEN"
-      echo "DILIN_TEST_MARKETPLACE_TOKEN: $DILIN_TEST_MARKETPLACE_TOKEN"
-      echo "marketplace_token: $marketplace_token"
-      echo "##########"
 
       # Set job variable
       echo "##vso[task.setvariable variable=is_prod]$is_prod"
