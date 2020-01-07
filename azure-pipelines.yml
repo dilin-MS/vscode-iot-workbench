@@ -159,7 +159,7 @@ jobs:
       isPreRelease: eq(variables['is_test'], true)
   # Deploy to production marketplace
   - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/workbench-ubuntu-1604-drop'
+    workingDirectory: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Deploy to production marketplace'
     env:
       MARKETPLACE_TOKEN: $(marketplace_token)
