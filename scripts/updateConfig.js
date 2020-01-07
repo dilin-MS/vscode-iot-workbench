@@ -7,46 +7,48 @@ const fs = require('fs');
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+$/:          Production release (eg. v0.10.18)
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]/:  RC release (eg. v0.10.18-rc, v0.10.18-rc2, etc.)
  */
-if (process.env.TRAVIS_EVENT_TYPE === "cron" || process.env.TRAVIS_TAG) {
+console.log("process.env.DEPLOY_TOMARKETPLACE");
+console.log(process.env.DEPLOY_TOMARKETPLACE);
+
+console.log("process.env.DEPLOY_TO_GITHUB_RELEASE");
+console.log(process.env.DEPLOY_TO_GITHUB_RELEASE);
+
+if (process.env.DEPLOY_TO_MARKETPLACE === "true") {
   const packageJson = JSON.parse(fs.readFileSync('package.json'));
 
   // Nightly Build
-  if (process.env.TRAVIS_EVENT_TYPE === "cron") {
+  if (process.env.BUILD_REASON === "Schedule") {
     const nightlyBuildName = "test-hawk-project-nightly";
     const nightlyBuildDisplayName = "Test HAWK Project (Nightly)";
     const nightlyBuildPublisher = "dilin";
     modifyPackageJsonForNonProduction(packageJson, nightlyBuildName, nightlyBuildDisplayName, nightlyBuildPublisher);
-  } else if (process.env.TRAVIS_TAG) {
-    const isProduction = /^v?[0-9]+\.[0-9]+\.[0-9]+$/.test(process.env.TRAVIS_TAG || '');
-    const isTestVersion = /^v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]/.test(process.env.TRAVIS_TAG || '');
+  } else if (process.env.IS_PROD) {
+    // Update resource link
+    const codeGenUrl = "https://aka.ms/iot-codegen-cli-for-workbench";
+    packageJson.codeGenConfigUrl = codeGenUrl;
 
-    if (isProduction) {
-      // Update resource link
-      const codeGenUrl = "https://aka.ms/iot-codegen-cli-for-workbench";
-      packageJson.codeGenConfigUrl = codeGenUrl;
+    // Update production AI Key
+    packageJson.aiKey = process.env['PROD_AIKEY'];
 
-      // Update production AI Key
-      packageJson.aiKey = process.env['PROD_AIKEY'];
-    } else if (isTestVersion) {
-      const testName = "test-owl-project";
-      const testDisplayName = "Test OWL Project RC";
-      const testPublisher = "dilin";
-      modifyPackageJsonForNonProduction(packageJson, testName, testDisplayName, testPublisher);
+  } else if (process.env.IS_TEST) {
+    const testName = "test-hawk-project-rc";
+    const testDisplayName = "Test HAWK Project RC";
+    const testPublisher = "dilin";
+    modifyPackageJsonForNonProduction(packageJson, testName, testDisplayName, testPublisher);
 
-      // Modify extensionId in template files
-      const extensionIdPattern = /vsciot-vscode.vscode-iot-workbench/g;
-      const rcExtensionId = 'iotdevexbuild.test-hawk-project';
+    // Modify extensionId in template files
+    const extensionIdPattern = /dilin.test-hawk-project/g;
+    const rcExtensionId = 'dilin.test-hawk-project-rc';
 
-      const arm7DevcontainerJsonFile = "resources/templates/arm7/devcontainer.json";
-      const arm8DevcontainerJsonFile = "resources/templates/arm8/devcontainer.json";
-      const x86DevcontainerJsonFile = "resources/templates/x86/devcontainer.json";
-      const files = [arm7DevcontainerJsonFile, arm8DevcontainerJsonFile, x86DevcontainerJsonFile];
-      files.forEach(filePath => {
-        const originalJsonFile = fs.readFileSync(filePath).toString();
-        const replaceJson = originalJsonFile.replace(extensionIdPattern, rcExtensionId);
-        fs.writeFileSync(filePath, replaceJson);
-      });
-    }
+    const arm7DevcontainerJsonFile = "resources/templates/arm7/devcontainer.json";
+    const arm8DevcontainerJsonFile = "resources/templates/arm8/devcontainer.json";
+    const x86DevcontainerJsonFile = "resources/templates/x86/devcontainer.json";
+    const files = [arm7DevcontainerJsonFile, arm8DevcontainerJsonFile, x86DevcontainerJsonFile];
+    files.forEach(filePath => {
+      const originalJsonFile = fs.readFileSync(filePath).toString();
+      const replaceJson = originalJsonFile.replace(extensionIdPattern, rcExtensionId);
+      fs.writeFileSync(filePath, replaceJson);
+    });
   }
 
   fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n');
