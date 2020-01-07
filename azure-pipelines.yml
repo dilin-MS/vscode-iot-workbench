@@ -143,7 +143,7 @@ jobs:
       repositoryName: '$(Build.Repository.Name)'
       action: 'create'
       target: '$(Build.SourceVersion)'
-      isPreRelease: eq(variables['is_test'], true)
+      isPreRelease: $(is_test)
     condition: and(succeeded(), eq(variables['deploy_to_github_release'], 'true'))
 
   # Deploy to marketplace (prod / rc / nightly build)
