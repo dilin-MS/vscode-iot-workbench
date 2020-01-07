@@ -129,6 +129,10 @@ jobs:
       echo "##vso[task.setvariable variable=marketplace_token]$marketplace_token"
       echo "##vso[task.setvariable variable=deploy_to_github_release]$deploy_to_github_release"
       echo "##vso[task.setvariable variable=deploy_to_marketplace]$deploy_to_marketplace"
+    env:
+      # Pass secrect variable
+      DILIN_MARKETPLACE_TOKEN: $(dilin_marketplace_token)
+      DILIN_TEST_MARKETPLACE_TOKEN: $(dilin_test_marketplace_token)
   - script: node scripts/updateConfig.js
     displayName: 'Update configuration'
   - script: vsce package
@@ -155,9 +159,7 @@ jobs:
     condition: and(succeeded(), eq(variables['deploy_to_github_release'], 'true'))
 
   # Deploy to marketplace (prod / rc / nightly build)
-  - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
+  - bash: vsce publish -p $(marketplace_token) --packagePath *.vsix
     workingDirectory: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Deploy to marketplace'
-    env:
-      MARKETPLACE_TOKEN: $(marketplace_token)
     condition: and(succeeded(), eq(variables['deploy_to_marketplace'], 'true'))
