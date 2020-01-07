@@ -143,7 +143,7 @@ jobs:
       artifactName: workbench-ubuntu-1604-drop
 
   # Deploy prod or rc to Github Release
-  - task: GitHubRelease@1
+  - task: GitHubRelease@0
     inputs:
       gitHubConnection: 'dilin-ms-test'
       repositoryName: '$(Build.Repository.Name)'
@@ -151,8 +151,6 @@ jobs:
       target: '$(Build.SourceVersion)'
       tagSource: 'gitTag'
       tagPattern: 'v?[0-9]+\.[0-9]+\.[0-9]+'
-      changeLogCompareToRelease: 'lastFullRelease'
-      changeLogType: 'commitBased'
       isPreRelease: eq(variables['is_test'], true)
     condition: and(succeeded(), eq(variables['deploy_to_github_release'], 'true'))
 
