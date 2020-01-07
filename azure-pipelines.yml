@@ -116,12 +116,14 @@ jobs:
 
       [[ $BUILD_SOURCEBRANCH =~ $is_prod_tag ]] && is_prod=true && marketplace_token=$DILIN_MARKETPLACE_TOKEN
       [[ $BUILD_SOURCEBRANCH =~ $is_test_tag ]] && is_test=true && marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN
-      if [[ "$BUILD_REASON" == "Schedule" ]]; then is_nightly_build=true && marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN; fi
-      if [[ "$is_prod" == "true" || "$is_test" == "true" || "$is_nightly_build" == "true" ]]; then to_deploy=true; fi
+      if [[ "$BUILD_REASON" == "Schedule" ]]; then is_nightly_build=true && marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN fi
+      if [[ "$is_prod" == "true" || "$is_test" == "true" ]]; then deploy_to_github_release=true; fi
+      if [[ "$is_prod" == "true" || "$is_test" == "true" || "$is_nightly_build" == "true" ]]; then deploy_to_marketplace=true; fi
 
       echo "is_prod: $is_prod"
       echo "is_test: $is_test"
-      echo "to_deploy: $to_deploy"
+      echo "deploy_to_github_release: $deploy_to_github_release"
+      echo "deploy_to_marketplace: $deploy_to_marketplace"
       echo "is_nightly_build: $is_nightly_build"
       echo "DILIN_MARKETPLACE_TOKEN: $DILIN_MARKETPLACE_TOKEN"
       echo "DILIN_TEST_MARKETPLACE_TOKEN: $DILIN_TEST_MARKETPLACE_TOKEN"
@@ -131,16 +133,14 @@ jobs:
       # Set job variable
       echo "##vso[task.setvariable variable=is_prod]$is_prod"
       echo "##vso[task.setvariable variable=is_test]$is_test"
-      echo "##vso[task.setvariable variable=to_deploy]$to_deploy"
+      echo "##vso[task.setvariable variable=deploy_to_github_release]$deploy_to_github_release"
+      echo "##vso[task.setvariable variable=deploy_to_marketplace]$deploy_to_marketplace"
       echo "##vso[task.setvariable variable=is_nightly_build]$is_nightly_build"
 
-  - bash: echo $(is_prod)
-  - bash: echo $(is_test)
-  - bash: echo $(to_deploy)
   - script: node scripts/test.js
     displayName: 'Test variable in script file'      
-  - script: node scripts/test.js
-    displayName: 'Update configuration for production'
+  # - script: node scripts/updateConfig.js
+  #   displayName: 'Update configuration for production'
   - script: vsce package
     displayName: 'Build VSIX package'
   - task: CopyFiles@2
@@ -153,17 +153,19 @@ jobs:
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: workbench-ubuntu-1604-drop
-  # Deploy to Github Release
+
+  # Deploy prod or rc to Github Release
   - task: GitHubRelease@0
-    condition: and(succeeded(), eq(variables['to_deploy'], 'true'))
     inputs:
       gitHubConnection: 'dilin-ms-test'
       repositoryName: '$(Build.Repository.Name)'
       isPreRelease: eq(variables['is_test'], true)
+    condition: and(succeeded(), eq(variables['deploy_to_github_release'], 'true'))
+
   # Deploy to marketplace
   - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
     workingDirectory: '$(Build.ArtifactStagingDirectory)'
     displayName: 'Deploy to marketplace'
     env:
       MARKETPLACE_TOKEN: $(marketplace_token)
-    condition: and(succeeded(), eq(variables['to_deploy'], 'true'))
+    condition: and(succeeded(), eq(variables['deploy_to_marketplace'], 'true'))
