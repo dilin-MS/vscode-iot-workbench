@@ -114,17 +114,15 @@ jobs:
       [[ $BUILD_SOURCEBRANCH =~ $IS_PROD_TAG ]] && IS_PROD=true
       [[ $BUILD_SOURCEBRANCH =~ $IS_TEST_TAG ]] && IS_TEST=true
 
-      echo $IS_PROD
-      echo $IS_TEST
       # Set job variable
       echo "##vso[task.setvariable variable=IS_PROD]$IS_PROD"
       echo "##vso[task.setvariable variable=IS_TEST]$IS_TEST"
-  - bash: echo $(IS_TEST)
-  - bash: echo $(IS_PROD)
-  # - script: node scripts/test.js
-  #   displayName: 'Test variable in script file'      
-  # - script: node scripts/test.js
-  #   displayName: 'Update configuration for production'
+  - bash: echo $IS_TEST
+  - bash: echo $IS_PROD
+  - script: node scripts/test.js
+    displayName: 'Test variable in script file'      
+  - script: node scripts/test.js
+    displayName: 'Update configuration for production'
   # - script: vsce package
   #   displayName: 'Build VSIX package'
   # - task: CopyFiles@2
