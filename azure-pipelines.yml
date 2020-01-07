@@ -111,8 +111,8 @@ jobs:
   - bash: |
       IS_PROD_TAG=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
       IS_TEST_TAG=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]
-      [[ $BUILD_SOURCEBRANCH =~ $ISPRODTAG ]] && IS_PROD=true
-      [[ $BUILD_SOURCEBRANCH =~ $ISTESTTAG ]] && IS_TEST=true
+      [[ $BUILD_SOURCEBRANCH =~ $IS_PROD_TAG ]] && IS_PROD=true
+      [[ $BUILD_SOURCEBRANCH =~ $IS_TEST_TAG ]] && IS_TEST=true
 
       echo $IS_PROD
       echo $IS_TEST
