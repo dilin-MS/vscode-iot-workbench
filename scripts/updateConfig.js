@@ -7,8 +7,8 @@ const fs = require('fs');
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+$/:          Production release (eg. v0.10.18)
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]/:  RC release (eg. v0.10.18-rc, v0.10.18-rc2, etc.)
  */
-console.log("process.env.DEPLOY_TOMARKETPLACE");
-console.log(process.env.DEPLOY_TOMARKETPLACE);
+console.log("process.env.DEPLOY_TO_MARKETPLACE");
+console.log(process.env.DEPLOY_TO_MARKETPLACE);
 
 console.log("process.env.DEPLOY_TO_GITHUB_RELEASE");
 console.log(process.env.DEPLOY_TO_GITHUB_RELEASE);
