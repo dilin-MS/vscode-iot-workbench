@@ -92,16 +92,16 @@ jobs:
     demands: npm
 
   steps:
-  - task: Npm@1
-    displayName: 'Install dependencies'
-    inputs:
-      verbose: false
-  - task: Npm@1
-    displayName: 'Compile sources'
-    inputs:
-      command: custom
-      verbose: false
-      customCommand: 'run compile'
+  # - task: Npm@1
+  #   displayName: 'Install dependencies'
+  #   inputs:
+  #     verbose: false
+  # - task: Npm@1
+  #   displayName: 'Compile sources'
+  #   inputs:
+  #     command: custom
+  #     verbose: false
+  #     customCommand: 'run compile'
   # - script: sudo npm install -g vsce
   #   displayName: 'install vsce'
   # - script: node node_modules/gts/build/src/cli.js check
@@ -114,16 +114,16 @@ jobs:
       [[ $BUILD_SOURCEBRANCH =~ $ISPRODTAG ]] && IS_PROD=true
       [[ $BUILD_SOURCEBRANCH =~ $ISTESTTAG ]] && IS_TEST=true
 
+      echo $IS_PROD
+      echo $IS_TEST
       # Set job variable
       echo "##vso[task.setvariable variable=IS_PROD]$IS_PROD"
       echo "##vso[task.setvariable variable=IS_TEST]$IS_TEST"
-  - bash: echo $IS_TEST
-  - bash: echo $IS_PROD
-  - script: node scripts/test.js
-    displayName: 'Test variable in script file'
-
-      
-  # - script: node scripts/updateConfigForAzurePipeline.js
+  - bash: echo $(IS_TEST)
+  - bash: echo $(IS_PROD)
+  # - script: node scripts/test.js
+  #   displayName: 'Test variable in script file'      
+  # - script: node scripts/test.js
   #   displayName: 'Update configuration for production'
   # - script: vsce package
   #   displayName: 'Build VSIX package'
@@ -147,6 +147,7 @@ jobs:
   #     tagSource: 'gitTag'
   #     changeLogCompareToRelease: 'lastFullRelease'
   #     changeLogType: 'commitBased'
+  #     isPreRelease: $(IS_TEST)
   # # Deploy to production marketplace
   # - bash: vsce publish -p $MARKETPLACE_TOKEN --packagePath *.vsix
   #   workingDirectory: '$(Build.ArtifactStagingDirectory)/workbench-ubuntu-1604-drop'
