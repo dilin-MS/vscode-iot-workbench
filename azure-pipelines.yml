@@ -162,7 +162,7 @@ jobs:
   # Deploy prod or rc to Github Release
   - task: GitHubRelease@1
     inputs:
-      gitHubConnection: 'PAT for dilin github repo deployment'
+      gitHubConnection: 'dilin-ms-test'
       repositoryName: '$(Build.Repository.Name)'
       action: 'create'
       target: '$(Build.SourceVersion)'
