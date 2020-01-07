@@ -116,6 +116,7 @@ jobs:
       echo "##########"
 
       echo "BUILD_SOURCEBRANCH: $BUILD_SOURCEBRANCH"
+      echo "is_tag: $is_tag"
       [[ $BUILD_SOURCEBRANCH =~ $is_prod_tag ]] && is_prod=true && marketplace_token=$DILIN_MARKETPLACE_TOKEN
       [[ $BUILD_SOURCEBRANCH =~ $is_test_tag ]] && is_test=true && marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN
       $is_prod || $is_test && is_tag=true
@@ -133,6 +134,7 @@ jobs:
 
   - bash: echo $(is_prod)
   - bash: echo $(is_test)
+  - bash: echo $(is_tag)
   - script: node scripts/test.js
     displayName: 'Test variable in script file'      
   - script: node scripts/test.js
