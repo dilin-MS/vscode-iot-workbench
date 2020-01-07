@@ -116,7 +116,7 @@ jobs:
 
       [[ $BUILD_SOURCEBRANCH =~ $is_prod_tag ]] && is_prod=true && marketplace_token=$DILIN_MARKETPLACE_TOKEN
       [[ $BUILD_SOURCEBRANCH =~ $is_test_tag ]] && is_test=true && marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN
-      if [[ "$BUILD_REASON" == "Schedule" ]]; then is_nightly_build=true && marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN fi
+      if [[ "$BUILD_REASON" == "Schedule" ]]; then is_nightly_build=true && marketplace_token=$DILIN_TEST_MARKETPLACE_TOKEN; fi
       if [[ "$is_prod" == "true" || "$is_test" == "true" ]]; then deploy_to_github_release=true; fi
       if [[ "$is_prod" == "true" || "$is_test" == "true" || "$is_nightly_build" == "true" ]]; then deploy_to_marketplace=true; fi
 
