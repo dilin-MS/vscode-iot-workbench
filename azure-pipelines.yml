@@ -109,16 +109,26 @@ jobs:
   #   failOnStderr: True
 
   - bash: |
-      IS_PROD_TAG=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
-      IS_TEST_TAG=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]
-      [[ $BUILD_SOURCEBRANCH =~ $IS_PROD_TAG ]] && IS_PROD=true
-      [[ $BUILD_SOURCEBRANCH =~ $IS_TEST_TAG ]] && IS_TEST=true
+      is_prod_tag=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+$
+      is_test_tag=^ref\/tags\/v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]
+      echo "is_prod_tag: $is_prod_tag"
+      echo "is_test_tag: $is_test_tag"
+      echo "##########"
+
+      echo "BUILD_SOURCEBRANCH: $BUILD_SOURCEBRANCH"
+      [[ $BUILD_SOURCEBRANCH =~ $is_prod_tag ]] && is_prod=true
+      [[ $BUILD_SOURCEBRANCH =~ $is_test_tag ]] && is_test=true
+      echo "is_prod: $is_prod"
+      echo "is_test: $is_test"
+      echo "##########"
 
       # Set job variable
-      echo "##vso[task.setvariable variable=IS_PROD]$IS_PROD"
-      echo "##vso[task.setvariable variable=IS_TEST]$IS_TEST"
-  - bash: echo $IS_TEST
-  - bash: echo $IS_PROD
+      echo "##vso[task.setvariable variable=is_prod]$is_prod"
+      echo "##vso[task.setvariable variable=is_test]$is_test"
+  - bash: echo $is_prod
+  - bash: echo $is_test
+  - bash: echo $(is_prod)
+  - bash: echo $(is_test)
   - script: node scripts/test.js
     displayName: 'Test variable in script file'      
   - script: node scripts/test.js
