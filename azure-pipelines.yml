@@ -176,7 +176,7 @@ steps:
       action: 'create'
       target: '$(Build.SourceVersion)'
       isPreRelease: $(is_test)
-    condition: and(succeeded(), eq(variables['deploy_to_marketplace'], 'true'), ne(variables['Build.reason'], "Schedule"), eq(variables['Agent.OS'], 'Linux'))
+    condition: and(succeeded(), eq(variables['deploy_to_marketplace'], 'true'), ne(variables['Build.reason'], 'Schedule'), eq(variables['Agent.OS'], 'Linux'))
 
   # Deploy to marketplace (prod / rc / nightly build)
   - bash: vsce publish -p $(marketplace_token) --packagePath *.vsix
