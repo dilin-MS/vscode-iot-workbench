@@ -143,8 +143,12 @@ steps:
     displayName: 'Define runtime variable'
       
   - script: sudo npm install -g vsce
-    displayName: 'install vsce'
-    condition: and(succeeded(), eq(variables['deploy_to_marketplace'], 'true'))
+    displayName: 'install vsce in Linux or MacOS'
+    condition: and(succeeded(), eq(variables['deploy_to_marketplace'], 'true'), ne(variables['Agent.OS'], 'Windows_NT')))
+
+  - script: npm install -g vsce
+    displayName: 'install vsce in Windows'
+    condition: and(succeeded(), eq(variables['deploy_to_marketplace'], 'true'), eq(variables['Agent.OS'], 'Windows_NT')))
 
   - script: node scripts/updateConfig.js
     displayName: 'Update configuration'
