@@ -40,6 +40,11 @@ steps:
     displayName: 'check gts error'
     failOnStderr: True
 
+  - task: CredScan@2
+    displayName: 'Run CredScan'
+    inputs:
+      toolMajorVersion: 'V1'
+
   - task: Npm@1
     displayName: 'Compile sources'
     inputs:
