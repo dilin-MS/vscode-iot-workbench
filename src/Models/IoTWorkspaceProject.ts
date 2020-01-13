@@ -10,7 +10,7 @@ import {ConfigHandler} from '../configHandler';
 import {ConfigKey, EventNames, FileNames, ScaffoldType} from '../constants';
 import {FileUtility} from '../FileUtility';
 import {TelemetryContext, TelemetryWorker} from '../telemetry';
-import {getFirstWorkspaceFolderPath, updateProjectHostTypeConfig} from '../utils';
+import {getWorkspaceFile, updateProjectHostTypeConfig} from '../utils';
 
 import {AzureComponentConfig, Dependency} from './AzureComponentConfig';
 import {Component, ComponentType} from './Interfaces/Component';
@@ -46,35 +46,24 @@ const folderName = {
 export class IoTWorkspaceProject extends IoTWorkbenchProjectBase {
   private deviceRootPath = '';
   private workspaceConfigFilePath = '';
-  private vscodeFolderPath = '';
 
   constructor(
       context: vscode.ExtensionContext, channel: vscode.OutputChannel,
-      telemetryContext: TelemetryContext, rootFolderPath?: string) {
+      telemetryContext: TelemetryContext, rootFolderPath: string) {
     super(context, channel, telemetryContext);
     this.projectHostType = ProjectHostType.Workspace;
-
-    if (rootFolderPath) {
-      this.projectRootPath = rootFolderPath;
-    } else {
-      const firstWorkspaceFolder = getFirstWorkspaceFolderPath();
-      if (!firstWorkspaceFolder) {
-        throw new Error(`Fail to get first workspace folder.`);
-      }
-      this.projectRootPath = path.join(firstWorkspaceFolder, '..');
+    if (!rootFolderPath) {
+      throw new Error(
+          `Fail to construct iot workspace project: root folder path is empty.`);
     }
-
-    this.workspaceConfigFilePath = path.join(
-        this.projectRootPath,
-        `${path.basename(this.projectRootPath)}${
-            FileNames.workspaceExtensionName}`);
-    this.vscodeFolderPath =
-        path.join(this.projectRootPath, FileNames.vscodeSettingsFolderName);
+    this.projectRootPath = rootFolderPath;
     this.telemetryContext.properties.projectHostType = this.projectHostType;
   }
 
   async load(scaffoldType: ScaffoldType, initLoad = false): Promise<void> {
-    // Init device root path and iot workbench project file path
+    this.validateProjectRootPath(scaffoldType);
+
+    // Init device root path
     const devicePath = ConfigHandler.get<string>(ConfigKey.devicePath);
     if (!devicePath) {
       throw new Error(
@@ -86,12 +75,14 @@ export class IoTWorkspaceProject extends IoTWorkbenchProjectBase {
           `Device root path ${this.deviceRootPath} does not exist.`);
     }
 
+    // Init and update iot workbench project file
     this.iotWorkbenchProjectFilePath =
         path.join(this.deviceRootPath, FileNames.iotWorkbenchProjectFileName);
-
-    // Update iot workbench project file.
     await updateProjectHostTypeConfig(
         scaffoldType, this.iotWorkbenchProjectFilePath, this.projectHostType);
+
+    // Init workspace config file
+    this.loadAndInitWorkspaceConfigFilePath(scaffoldType);
 
     // Send load project event telemetry only if the IoT project is loaded
     // when VS Code opens.
@@ -119,7 +110,7 @@ export class IoTWorkspaceProject extends IoTWorkbenchProjectBase {
       boardId: string, openInNewWindow: boolean): Promise<void> {
     const createTimeScaffoldType = ScaffoldType.Local;
 
-    // Init device root path and iot workbench project file path
+    // Init device root path
     this.deviceRootPath =
         path.join(this.projectRootPath, folderName.deviceDefaultFolderName);
     if (!await FileUtility.directoryExists(
@@ -127,15 +118,14 @@ export class IoTWorkspaceProject extends IoTWorkbenchProjectBase {
       await FileUtility.mkdirRecursively(
           createTimeScaffoldType, this.deviceRootPath);
     }
+    // Init iot workbench project file path
     this.iotWorkbenchProjectFilePath =
         path.join(this.deviceRootPath, FileNames.iotWorkbenchProjectFileName);
-
-    // Create vscode folder path
-    if (!await FileUtility.directoryExists(
-            createTimeScaffoldType, this.vscodeFolderPath)) {
-      await FileUtility.mkdirRecursively(
-          createTimeScaffoldType, this.vscodeFolderPath);
-    }
+    // Init workspace config file
+    this.workspaceConfigFilePath = path.join(
+        this.projectRootPath,
+        `${path.basename(this.projectRootPath)}${
+            FileNames.workspaceExtensionName}`);
 
     // Update iot workbench project file.
     await updateProjectHostTypeConfig(
@@ -152,7 +142,7 @@ export class IoTWorkspaceProject extends IoTWorkbenchProjectBase {
         folderName.deviceDefaultFolderName;
 
     // Create azure components
-    this.createAzureComponentsWithProjectType(
+    await this.createAzureComponentsWithProjectType(
         projectType, createTimeScaffoldType, workspace);
 
     // Update workspace config to workspace config file
@@ -189,6 +179,8 @@ export class IoTWorkspaceProject extends IoTWorkbenchProjectBase {
   async openProject(
       scaffoldType: ScaffoldType, openInNewWindow: boolean,
       openScenario: OpenScenario): Promise<void> {
+    this.loadAndInitWorkspaceConfigFilePath(scaffoldType);
+
     if (!await FileUtility.fileExists(
             scaffoldType, this.workspaceConfigFilePath)) {
       throw new Error(`Workspace config file ${
@@ -488,6 +480,21 @@ export class IoTWorkspaceProject extends IoTWorkbenchProjectBase {
       }
       default:
         break;
+    }
+  }
+
+  // Init workspace config file path at load time
+  private async loadAndInitWorkspaceConfigFilePath(scaffoldType: ScaffoldType) {
+    this.validateProjectRootPath(scaffoldType);
+
+    const workspaceFile = getWorkspaceFile(this.projectRootPath);
+    if (workspaceFile) {
+      this.workspaceConfigFilePath =
+          path.join(this.projectRootPath, workspaceFile);
+    } else {
+      throw new Error(
+          `Fail to init iot project workspace file path: Cannot find workspace file under project root path: ${
+              this.projectRootPath}.`);
     }
   }
 }

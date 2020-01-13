@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 import * as cp from 'child_process';
+import * as crypto from 'crypto';
 import * as fs from 'fs-plus';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -123,12 +124,14 @@ export interface FolderQuickPickItem<T = undefined> extends
  * Check there is workspace opened in VS Code
  * and get the first workspace folder path.
  */
-export function getFirstWorkspaceFolderPath(): string {
+export function getFirstWorkspaceFolderPath(showWarningMessage = true): string {
   if (!(vscode.workspace.workspaceFolders &&
         vscode.workspace.workspaceFolders.length > 0) ||
       !vscode.workspace.workspaceFolders[0].uri.fsPath) {
-    vscode.window.showWarningMessage(
-        'You have not yet opened a folder in Visual Studio Code. Please select a folder first.');
+    if (showWarningMessage) {
+      vscode.window.showWarningMessage(
+          'You have not yet opened a folder in Visual Studio Code. Please select a folder first.');
+    }
     return '';
   }
 
@@ -561,6 +564,16 @@ export async function getProjectConfig(
   return projectConfig;
 }
 
+export function getWorkspaceFile(rootPath: string): string {
+  const workspaceFiles = fs.readdirSync(rootPath).filter(
+      file => path.extname(file).endsWith(FileNames.workspaceExtensionName));
+  if (workspaceFiles && workspaceFiles.length >= 0) {
+    return workspaceFiles[0];
+  } else {
+    return '';
+  }
+}
+
 /**
  * Used when it is an IoT workspace project but not open correctly.
  * Ask to open as workspace.
@@ -570,10 +583,9 @@ export async function properlyOpenIoTWorkspaceProject(
   const rootPath = getFirstWorkspaceFolderPath();
   const workbenchFileName =
       path.join(rootPath, 'Device', FileNames.iotWorkbenchProjectFileName);
-  const workspaceFiles = fs.readdirSync(rootPath).filter(
-      file => path.extname(file).endsWith(FileNames.workspaceExtensionName));
-  if (fs.existsSync(workbenchFileName) && workspaceFiles && workspaceFiles[0]) {
-    await askAndOpenProject(rootPath, workspaceFiles[0], telemetryContext);
+  const workspaceFile = getWorkspaceFile(rootPath);
+  if (fs.existsSync(workbenchFileName) && workspaceFile) {
+    await askAndOpenProject(rootPath, workspaceFile, telemetryContext);
   }
 }
 
@@ -581,11 +593,8 @@ export function isWorkspaceProject(): boolean {
   const rootPath = getFirstWorkspaceFolderPath();
   const workbenchFileName =
       path.join(rootPath, 'Device', FileNames.iotWorkbenchProjectFileName);
-
-  const workspaceFiles = fs.readdirSync(rootPath).filter(
-      file => path.extname(file).endsWith(FileNames.workspaceExtensionName));
-
-  if (fs.existsSync(workbenchFileName) && workspaceFiles && workspaceFiles[0]) {
+  const workspaceFile = getWorkspaceFile(rootPath);
+  if (fs.existsSync(workbenchFileName) && workspaceFile) {
     return true;
   }
   return false;
@@ -602,17 +611,18 @@ export async function constructAndLoadIoTProject(
     telemetryContext: TelemetryContext, isTriggeredWhenExtensionLoad = false) {
   const scaffoldType = ScaffoldType.Workspace;
 
-  const projectFileRootPath = getFirstWorkspaceFolderPath();
+  const projectFileRootPath = getFirstWorkspaceFolderPath(false);
   const projectHostType = await IoTWorkbenchProjectBase.getProjectType(
       scaffoldType, projectFileRootPath);
 
   let iotProject;
   if (projectHostType === ProjectHostType.Container) {
     iotProject = new ioTContainerizedProjectModule.IoTContainerizedProject(
-        context, channel, telemetryContext);
+        context, channel, telemetryContext, projectFileRootPath);
   } else if (projectHostType === ProjectHostType.Workspace) {
+    const projectRootPath = path.join(projectFileRootPath, '..');
     iotProject = new ioTWorkspaceProjectModule.IoTWorkspaceProject(
-        context, channel, telemetryContext);
+        context, channel, telemetryContext, projectRootPath);
   }
 
   if (isTriggeredWhenExtensionLoad) {
@@ -760,7 +770,8 @@ export async function askToOverwriteFile(fileName: string):
 export async function fetchAndExecuteTask(
     context: vscode.ExtensionContext, channel: vscode.OutputChannel,
     telemetryContext: TelemetryContext, deviceRootPath: string,
-    operationType: OperationType, taskName: string): Promise<void> {
+    operationType: OperationType, platform: PlatformType,
+    taskName: string): Promise<void> {
   const scaffoldType = ScaffoldType.Workspace;
   if (!await FileUtility.directoryExists(scaffoldType, deviceRootPath)) {
     throw new Error('Unable to find the device root folder.');
@@ -772,8 +783,8 @@ export async function fetchAndExecuteTask(
     channelShowAndAppendLine(channel, message);
 
     await askToConfigureEnvironment(
-        context, channel, telemetryContext, PlatformType.Arduino,
-        deviceRootPath, scaffoldType, operationType);
+        context, channel, telemetryContext, platform, deviceRootPath,
+        scaffoldType, operationType);
     return;
   }
 
@@ -786,8 +797,8 @@ export async function fetchAndExecuteTask(
     channelShowAndAppendLine(channel, message);
 
     await askToConfigureEnvironment(
-        context, channel, telemetryContext, PlatformType.Arduino,
-        deviceRootPath, scaffoldType, operationType);
+        context, channel, telemetryContext, platform, deviceRootPath,
+        scaffoldType, operationType);
     return;
   }
 
@@ -880,4 +891,17 @@ export function shouldShowLandingPage(context: vscode.ExtensionContext):
     boolean {
   const hasPopUp = context.globalState.get<boolean>(ConfigKey.hasPopUp, false);
   return !hasPopUp;
+}
+
+/**
+ * Hash a string and get hash value.
+ * @param stringToHash string to hash
+ * @param algorithm hash algorithm
+ */
+export function getHashFromString(
+    stringToHash: string, algorithm = 'md5'): string {
+  const hash = crypto.createHash(algorithm);
+  hash.update(stringToHash);
+  const hashValue = hash.digest('hex');
+  return hashValue;
 }
