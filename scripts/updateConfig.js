@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require("fs");
 
 /**
  * If Nightly Build or Production release or RC release, modify package.json and related template files.
@@ -7,14 +7,18 @@ const fs = require('fs');
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+$/:          Production release (eg. v0.10.18)
  * TRAVIS_TAG =~ /^v?[0-9]+\.[0-9]+\.[0-9]+-[rR][cC]/:  RC release (eg. v0.10.18-rc, v0.10.18-rc2, etc.)
  */
-const packageJson = JSON.parse(fs.readFileSync('package.json'));
+const packageJson = JSON.parse(fs.readFileSync("package.json"));
 
 // Nightly Build
 if (process.env.BUILD_REASON === "Schedule") {
   console.log("nightly build");
   const nightlyBuildName = "test-hawk-project-nightly";
   const nightlyBuildDisplayName = "Test HAWK Project (Nightly)";
-  updateConfigForNonProduction(packageJson, nightlyBuildName, nightlyBuildDisplayName);
+  updateConfigForNonProduction(
+    packageJson,
+    nightlyBuildName,
+    nightlyBuildDisplayName
+  );
 } else if (process.env.IS_PROD) {
   console.log("process.env.IS_PROD");
   console.log(process.env.IS_PROD);
@@ -25,7 +29,6 @@ if (process.env.BUILD_REASON === "Schedule") {
 
   // Update production AI Key
   packageJson.aiKey = process.env.PROD_AIKEY;
-
 } else if (process.env.IS_TEST) {
   console.log("process.env.IS_TEST");
   console.log(process.env.IS_TEST);
@@ -35,7 +38,7 @@ if (process.env.BUILD_REASON === "Schedule") {
   updateConfigForNonProduction(packageJson, testName, testDisplayName);
 }
 
-fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n');
+fs.writeFileSync("package.json", JSON.stringify(packageJson, null, 2) + "\n");
 
 /**
  * Update package.json with test name, displayName, publisher, ai aky.
@@ -62,7 +65,7 @@ function updateConfigForNonProduction(packageJson, testName, testDisplayName) {
 
   // Modify extensionId in template files
   const extensionIdPattern = /vsciot-vscode.vscode-iot-workbench/g;
-  const testExtensionId = 'dilin.' + testName;
+  const testExtensionId = "dilin." + testName;
 
   const arm7DevcontainerJsonFile = "resources/templates/arm7/devcontainer.json";
   const arm8DevcontainerJsonFile = "resources/templates/arm8/devcontainer.json";
