@@ -44,6 +44,9 @@ steps:
 
   - script: docker --version
     displayName: 'Check docker'
+    
+  - script: docker run -ti --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -name "*.md"`
+    displayName: 'Validate links'
 
   - script: node node_modules/gts/build/src/cli.js check
     displayName: 'check gts error'
