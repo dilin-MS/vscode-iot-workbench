@@ -45,7 +45,7 @@ steps:
   - script: docker --version
     displayName: 'Check docker'
     
-  - script: docker run --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -path ./node_modules -prune -o -name "*.md" -print`
+  - script: sudo docker run --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -path ./node_modules -prune -o -name "*.md" -print`
     displayName: 'Validate links'
 
   - script: node node_modules/gts/build/src/cli.js check
