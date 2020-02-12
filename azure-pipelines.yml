@@ -36,6 +36,12 @@ steps:
     inputs:
       verbose: false
 
+  - task: DockerInstaller@0
+    inputs:
+      dockerVersion: '17.09.0-ce'
+    condition: eq( variables['Agent.OS'], 'Darwin' )
+    displayName: 'Install docker in mac'
+
   - script: docker --version
     displayName: 'Check docker'
 
