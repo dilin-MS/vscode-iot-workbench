@@ -36,6 +36,9 @@ steps:
     inputs:
       verbose: false
 
+  - script: docker --version
+    displayName: 'Check docker'
+
   - script: node node_modules/gts/build/src/cli.js check
     displayName: 'check gts error'
     failOnStderr: True
