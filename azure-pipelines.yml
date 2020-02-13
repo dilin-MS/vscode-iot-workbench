@@ -31,18 +31,24 @@ steps:
     inputs:
       version: '>=12.0.0'
 
-  - script: docker run --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -name "*.md"`
-    displayName: 'Validate links on Linux'
-    condition: eq( variables['Agent.OS'], 'Linux' )
+  # - script: docker run --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -name "*.md"`
+  #   displayName: 'Validate links on Linux'
+  #   condition: eq( variables['Agent.OS'], 'Linux' )
+
+  # - task: Bash@3
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |        
+  #       gem install awesome_bot && awesome_bot --allow-dupe --allow-redirect --skip-save-results `find .  -name "*.md"`
+  #   condition: ne( variables['Agent.OS'], 'Linux' )
+  #   displayName: 'Validate links on Win / Mac'
 
   - task: Bash@3
     inputs:
       targetType: 'inline'
       script: |        
         gem install awesome_bot && awesome_bot --allow-dupe --allow-redirect --skip-save-results `find .  -name "*.md"`
-    condition: ne( variables['Agent.OS'], 'Linux' )
-    displayName: 'Validate links on Win / Mac'
-
+    displayName: 'Validate links'
 
   - task: Npm@1
     displayName: 'Install dependencies'
