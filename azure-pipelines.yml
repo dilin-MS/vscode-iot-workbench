@@ -37,13 +37,9 @@ steps:
       verbose: false
 
       
-  - script: sudo apt-get install -y rubygems && gem install awesome_bot
-    displayName: 'Install ruby gems in mac'
-    # condition: eq( variables['Agent.OS'], 'Darwin' )
-    
-  - script: sudo gem install awesome_bot && awesome_bot
+  - script: gem install awesome_bot
     displayName: 'Install awesome_bot in mac'
-    # condition: eq( variables['Agent.OS'], 'Darwin' )
+    condition: eq( variables['Agent.OS'], 'Darwin' )
     
   # - task: DockerInstaller@0
   #   inputs:
@@ -54,10 +50,13 @@ steps:
   # - script: docker --version
   #   displayName: 'Check docker'
     
-  # - script: sudo docker run --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -path ./node_modules -prune -o -name "*.md" -print`
-  #   displayName: 'Validate links'
+  - script: sudo docker run --rm -v $PWD:/mnt:ro dkhamsing/awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -path ./node_modules -prune -o -name "*.md" -print`
+    displayName: 'Validate links on WIN / LINUX'
+    condition: ne( variables['Agent.OS'], 'Darwin' )
+
   - script: sudo awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -path ./node_modules -prune -o -name "*.md" -print`
-    displayName: 'Validate links'
+    displayName: 'Validate links on MacOS'
+    condition: eq( variables['Agent.OS'], 'Darwin' )
 
   - script: node node_modules/gts/build/src/cli.js check
     displayName: 'check gts error'
