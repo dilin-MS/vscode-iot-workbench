@@ -43,7 +43,7 @@ steps:
     displayName: 'Validate links on Win'
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
 
-  - script: awesome_bot --allow-dupe --allow-redirect --skip-save-results `find . -path ./node_modules -prune -o -name "*.md" -print`
+  - script: awesome_bot --allow-dupe --allow-redirect --skip-save-results `find .  -name "*.md"`
     displayName: 'Validate links on Win'
     condition: eq( variables['Agent.OS'], 'Windows_NT' )
   - task: Npm@1
