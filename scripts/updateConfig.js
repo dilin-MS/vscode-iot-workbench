@@ -16,9 +16,6 @@ if (process.env.BUILD_REASON === "Schedule") {
   const nightlyBuildDisplayName = "Test HAWK Project (Nightly)";
   updateConfigForNonProduction(packageJson, nightlyBuildName, nightlyBuildDisplayName);
 } else if (process.env.IS_PROD) {
-  console.log("process.env.IS_PROD");
-  console.log(process.env.IS_PROD);
-
   // Update resource link
   const codeGenUrl = "https://aka.ms/iot-codegen-cli-for-workbench";
   packageJson.codeGenConfigUrl = codeGenUrl;
@@ -27,9 +24,6 @@ if (process.env.BUILD_REASON === "Schedule") {
   packageJson.aiKey = process.env.PROD_AIKEY;
 
 } else if (process.env.IS_TEST) {
-  console.log("process.env.IS_TEST");
-  console.log(process.env.IS_TEST);
-
   const testName = "test-hawk-project-rc";
   const testDisplayName = "Test HAWK Project RC";
   updateConfigForNonProduction(packageJson, testName, testDisplayName);
@@ -53,7 +47,7 @@ function updateConfigForNonProduction(packageJson, testName, testDisplayName) {
 
   packageJson.aiKey = process.env.TEST_AIKEY;
 
-  const indexOfDash = packageJson.version.indexOf('-');
+  const indexOfDash = packageJson.version.indexOf("-");
   if (indexOfDash > 0) {
     packageJson.version = packageJson.version.substring(0, indexOfDash);
   }
