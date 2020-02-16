@@ -38,17 +38,10 @@ steps:
   # - task: Bash@3
   #   inputs:
   #     targetType: 'inline'
-  #     script: |        
+  #     script: |
   #       gem install awesome_bot && awesome_bot --allow-dupe --allow-redirect --skip-save-results `find .  -name "*.md"`
   #   condition: ne( variables['Agent.OS'], 'Linux' )
   #   displayName: 'Validate links on Win / Mac'
-
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: |        
-        gem install awesome_bot && awesome_bot --allow-dupe --allow-redirect --skip-save-results `find .  -name "*.md"`
-    displayName: 'Validate links'
 
   - task: Npm@1
     displayName: 'Install dependencies'
