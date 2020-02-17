@@ -17,6 +17,11 @@ interface Link {
   lineNumber: number;
 }
 
+interface FileReport {
+  all: string[],
+  errors: string[]
+}
+
 async function main() {
   const rootDir = args.rootDir;
   const file = args.file;
@@ -32,18 +37,19 @@ async function main() {
 
   for (let i = 0; i < files.length; i++) {
     const errorLinksInFile = await checkLinks(files[i]);
-    const temp = errorLinks.concat(errorLinksInFile);
-    errorLinks = temp;
+    errorLinks = errorLinks.concat(errorLinksInFile);
   }
 
   // Log out error message
-  if (errorLinks) {
+  if (errorLinks.length > 0) {
     console.log("########### Issues :( ########");
-    console.log(`[3] error links len: ${errorLinks.length}`);
-    errorLinks.forEach(errorLink => {
-      console.log(errorLink);
-    });
+    console.log(`Error Links in total: ${errorLinks.length}`);
+    for (let i=0; i<errorLinks.length; i++) {
+      console.log(errorLinks[i]);
+    }
+    throw new Error("There are invalid links");
   }
+  console.log("####################### DONE ###########################");
 }
 
 main();
@@ -63,48 +69,83 @@ function executeCommand(command: string): Promise<string> {
 }
 // Validate external urls and relative links in markdown file
 async function checkLinks(file: string): Promise<string[]> {
-  const errorLinksInFile: string[] = [];
-  console.log(`###### Checking file: ${file}`);
+  // console.log(`\n####### Checking File: ${file}`);
+
   const links: Link[] = await getLinks(file);
 
-  if (links) {
-    await checkLinksCore(file, links, errorLinksInFile);
-  }
+  if (links.length > 0) {
+    return new Promise((resolve, reject) => {
+      checkLinksCore(file, links).then((fileReport) => {
+        console.log(`\n####### Checking File: ${file}`);
+        
+        // Print all links
+        console.log(`> All Links no: ${fileReport.all.length}`);
+        if (fileReport.all.length > 0) {
+          for (let i=0; i<fileReport.all.length; i++) {
+            console.log(fileReport.all[i]);
+          }
+        }
+  
+        // Print error links
+        console.log(`> Error Links no: ${fileReport.errors.length}`);
+        if (fileReport.errors.length > 0) {
+          for (let i=0; i<fileReport.errors.length; i++) {
+            console.log(fileReport.errors[i]);
+          }
+        }
+  
+        resolve(fileReport.errors);
+      });
+    });
+  } else {
+    return new Promise((resolve, reject) => {
+      console.log(`\n###### Checking file: ${file}`);
+      console.log(`No links found.`);
 
-  return errorLinksInFile;
+      resolve([]);
+    });
+  }
 }
 
-function checkLinksCore(file: string, links: Link[], errorLinksInFile: string[]): Promise<void> {
-  links.forEach(async link => {
-    let isBroken = false;
-    if (isHttpLink(link.address)) {
-      // Check external links
-      isBroken = await checkBrokenLinks(link.address, { allowRedirects: true, match404Page: /404/ });
-    } else {
-      // Check markdown relative urls
-      try {
-        const currentWorkingDirectory = path.dirname(file);
-        const fullPath = path.resolve(currentWorkingDirectory, link.address).split("#")[0];
-        isBroken = !fs.existsSync(fullPath);
-      } catch (error) {
-        // If there's an error, log the link
-        console.log(`Error: ${link.address} on line ${link.lineNumber} is not an HTTP/s or relative link.`);
-        isBroken = true;
+function checkLinksCore(file: string, links: Link[]): Promise<FileReport> {
+  return new Promise((resolve, reject) => {
+    let fileReport: FileReport = {all: [], errors: []};
+
+    links.forEach(async (link, index, array) => {
+      let isBroken = false;
+      if (isHttpLink(link.address)) {
+        // Check external links
+        isBroken = await checkBrokenLinks(link.address, { allowRedirects: true, match404Page: /404/ });
+      } else {
+        // Check markdown relative urls
+        try {
+          const currentWorkingDirectory = path.dirname(file);
+          const fullPath = path.resolve(currentWorkingDirectory, link.address).split("#")[0];
+          isBroken = !fs.existsSync(fullPath);
+        } catch (error) {
+          // If there's an error, log the link
+          console.log(`Error: ${link.address} on line ${link.lineNumber} is not an HTTP/s or relative link.`);
+          isBroken = true;
+        }
       }
-    }
+  
+      // Print log
+      let message = "";
+      if (isBroken) {
+        message  = `Error: [${file}] ${link.address} on line ${link.lineNumber} is unreachable.`;
+        fileReport.errors.push(message);
+        fileReport.all.push(message);
+      } else {
+        message = `Info: [${file}] ${link.address} on line ${link.lineNumber}.`; 
+        fileReport.all.push(message);
+      }
+      // console.log(message);
 
-    // Print log
-    if (isBroken) {
-      const errorMessage = `Error: [${file}] ${link.address} on line ${link.lineNumber} is unreachable.`;
-      errorLinksInFile.push(errorMessage);
-      // console.log(errorMessage);
-    } else {
-      console.log(`Info: [${file}] ${link.address} on line ${link.lineNumber}.`);
-    }
+      if (index === array.length -1) {
+        resolve(fileReport);
+      }
+    });
   });
-
-  console.log(`error links len: ${errorLinksInFile.length}`)
-  return;
 }
 
 function checkBrokenLinks(url: string, options: any): Promise<boolean> {
@@ -131,10 +172,15 @@ function getLinks(file: string): Promise<Link[]> {
     rl.on("line", line => {
       lineNumber++;
 
-      const links = line.match(/\[[^\[]+\]\(([^\)]+(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
+      // const links = line.match(/ \[ [^\[]+ \] \( ( [^\)] +(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
+      const links = line.match(/\[[\s\S]*?\]\([\s\S]*?\)/g);
       if (links) {
+        // console.log(`links: ${links}`);
         for (let i = 0; i < links.length; i++) {
           const link = links[i].match(/\[[^\[]+\]\(([^\)]+(\)[a-zA-Z0-9-]*.\w+\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/);
+          // for (let i=0; i<link.length; i++) {
+          //     console.log(`${i} -> ${link[i]}`);
+          // }
           const address = link[3] == null ? link[1].slice(0, -1) : link[3];
           linksToReturn.push({
             address: address,
@@ -142,6 +188,7 @@ function getLinks(file: string): Promise<Link[]> {
           });
         }
       }
+
     });
 
     rl.on("close", () => {
