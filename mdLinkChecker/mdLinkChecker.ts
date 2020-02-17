@@ -45,7 +45,7 @@ async function main() {
     console.log("########### Issues :( ########");
     console.log(`Error Links in total: ${errorLinks.length}`);
     for (let i=0; i<errorLinks.length; i++) {
-      console.log(errorLinks[i]);
+      console.log(` ${i+1}. ${errorLinks[i]}`);
     }
     throw new Error("There are invalid links");
   }
@@ -172,8 +172,8 @@ function getLinks(file: string): Promise<Link[]> {
     rl.on("line", line => {
       lineNumber++;
 
-      // const links = line.match(/ \[ [^\[]+ \] \( ( [^\)] +(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
-      const links = line.match(/\[[\s\S]*?\]\([\s\S]*?\)/g);
+      const links = line.match(/ \[ [^\[]+ \] \( ( [^\)] +(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
+      // const links = line.match(/\[[\s\S]*?\]\([\s\S]*?\)/g);
       if (links) {
         // console.log(`links: ${links}`);
         for (let i = 0; i < links.length; i++) {
