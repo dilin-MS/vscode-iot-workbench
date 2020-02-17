@@ -48,7 +48,7 @@ steps:
     inputs:
       verbose: false
 
-  - script: tsc run validateLinks
+  - script: npm run validateLinks
     displayName: 'Validate links on Linux'
     condition: eq( variables['Agent.OS'], 'Linux' )
 
