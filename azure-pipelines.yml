@@ -48,8 +48,12 @@ steps:
     inputs:
       verbose: false
 
-  - script: npm run check
-    displayName: 'Run eslint check'
+  - script: tsc run validateLinks
+    displayName: 'Validate links on Linux'
+    condition: eq( variables['Agent.OS'], 'Linux' )
+
+  - script: node node_modules/gts/build/src/cli.js check
+    displayName: 'check gts error'
     failOnStderr: True
 
   - task: Npm@1
