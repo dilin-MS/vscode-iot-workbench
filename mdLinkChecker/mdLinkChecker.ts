@@ -108,15 +108,10 @@ function getLinks(file: string): Promise<Link[]> {
 
     rl.on("line", line => {
       lineNumber++;
-      const links = line.match(/\[[^\[]+\]\(([^\)]+(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
-      // const links = line.match(/\[[\s\S]*?\]\([\s\S]*?\)/g);
+      const links = line.match(/\[[\s\S]*?\]\([\S]*?\)/g);
       if (links) {
-        // console.log(`links: ${links}`);
         for (let i = 0; i < links.length; i++) {
           const link = links[i].match(/\[[^\[]+\]\(([^\)]+(\)[a-zA-Z0-9-]*.\w+\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/);
-          // for (let i=0; i<link.length; i++) {
-          //     console.log(`${i} -> ${link[i]}`);
-          // }
           const address = link[3] == null ? link[1].slice(0, -1) : link[3];
           linksToReturn.push({
             address: address,
@@ -134,8 +129,6 @@ function getLinks(file: string): Promise<Link[]> {
 
 // Validate external urls and relative links in markdown file
 async function checkLinks(file: string): Promise<string[]> {
-  // console.log(`\n####### Checking File: ${file}`);
-
   const links: Link[] = await getLinks(file);
 
   if (links.length > 0) {
@@ -192,14 +185,16 @@ async function main(): Promise<void> {
 
   // Log out error message
   if (errorLinks.length > 0) {
-    console.log("########### Issues :( ########");
+    console.log("\n####### Issues :( ");
     console.log(`Error Links in total: ${errorLinks.length}`);
     for (let i = 0; i < errorLinks.length; i++) {
       console.log(` ${i + 1}. ${errorLinks[i]}`);
     }
-    throw new Error("There are invalid links");
+
+    // Exit on error
+    process.exit(1);
   }
-  console.log("####################### DONE ###########################");
+  console.log("############################ DONE ############################");
 }
 
 main();
