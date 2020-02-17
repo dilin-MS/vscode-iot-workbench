@@ -50,7 +50,6 @@ steps:
 
   - script: npm run validateLinks
     displayName: 'Validate links on Linux'
-    condition: eq( variables['Agent.OS'], 'Linux' )
 
   - script: npm run check
     displayName: 'Run eslint check'
