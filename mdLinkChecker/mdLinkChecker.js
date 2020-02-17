@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -44,11 +45,11 @@ var brokenLink = require("broken-link");
 var path = require("path");
 var fs = require("fs");
 var readline = require("readline");
-var exec = require('child_process').exec;
-var args = require('yargs').argv;
+var exec = require("child_process").exec;
+var args = require("yargs").argv;
 function main() {
     return __awaiter(this, void 0, void 0, function () {
-        var rootDir, file, files, errorLinks, command, i, errorLinksInFile;
+        var rootDir, file, files, errorLinks, command, i, errorLinksInFile, temp;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -60,7 +61,7 @@ function main() {
                     command = "find " + rootDir + " -name '*.md' ! -path './node_modules/*' ! -path './out/*'";
                     return [4 /*yield*/, executeCommand(command)];
                 case 1:
-                    files = (_a.sent()).trim().split('\n');
+                    files = (_a.sent()).trim().split("\n");
                     return [3 /*break*/, 3];
                 case 2:
                     if (file) {
@@ -75,7 +76,8 @@ function main() {
                     return [4 /*yield*/, checkLinks(files[i])];
                 case 5:
                     errorLinksInFile = _a.sent();
-                    errorLinks.concat(errorLinksInFile);
+                    temp = errorLinks.concat(errorLinksInFile);
+                    errorLinks = temp;
                     _a.label = 6;
                 case 6:
                     i++;
@@ -84,6 +86,7 @@ function main() {
                     // Log out error message
                     if (errorLinks) {
                         console.log("########### Issues :( ########");
+                        console.log("[3] error links len: " + errorLinks.length);
                         errorLinks.forEach(function (errorLink) {
                             console.log(errorLink);
                         });
@@ -147,12 +150,13 @@ function checkLinksCore(file, links, errorLinksInFile) {
                     // Check markdown relative urls
                     try {
                         currentWorkingDirectory = path.dirname(file);
-                        fullPath = path.resolve(currentWorkingDirectory, link.address).split('#')[0];
+                        fullPath = path.resolve(currentWorkingDirectory, link.address).split("#")[0];
                         isBroken = !fs.existsSync(fullPath);
                     }
                     catch (error) {
                         // If there's an error, log the link
                         console.log("Error: " + link.address + " on line " + link.lineNumber + " is not an HTTP/s or relative link.");
+                        isBroken = true;
                     }
                     _a.label = 3;
                 case 3:
@@ -169,6 +173,7 @@ function checkLinksCore(file, links, errorLinksInFile) {
             }
         });
     }); });
+    console.log("error links len: " + errorLinksInFile.length);
     return;
 }
 function checkBrokenLinks(url, options) {
@@ -190,13 +195,13 @@ function getLinks(file) {
         });
         var linksToReturn = new Array();
         var lineNumber = 0;
-        rl.on('line', function (line) {
+        rl.on("line", function (line) {
             lineNumber++;
             var links = line.match(/\[[^\[]+\]\(([^\)]+(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
             if (links) {
                 for (var i = 0; i < links.length; i++) {
                     var link = links[i].match(/\[[^\[]+\]\(([^\)]+(\)[a-zA-Z0-9-]*.\w+\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/);
-                    var address = (link[3] == null) ? link[1].slice(0, -1) : link[3];
+                    var address = link[3] == null ? link[1].slice(0, -1) : link[3];
                     linksToReturn.push({
                         address: address,
                         lineNumber: lineNumber
@@ -204,7 +209,7 @@ function getLinks(file) {
                 }
             }
         });
-        rl.on('close', function () {
+        rl.on("close", function () {
             resolve(linksToReturn);
         });
     });
@@ -212,5 +217,5 @@ function getLinks(file) {
 // Is this a valid HTTP/S link?
 function isHttpLink(linkToCheck) {
     // Use the validator to avoid writing URL checking logic
-    return validator.isURL(linkToCheck, { require_protocol: true, protocols: ['http', 'https'] }) ? true : false;
+    return validator.isURL(linkToCheck, { require_protocol: true, protocols: ["http", "https"] }) ? true : false;
 }

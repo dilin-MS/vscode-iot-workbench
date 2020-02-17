@@ -22,7 +22,7 @@ async function main() {
   const file = args.file;
 
   let files = [];
-  const errorLinks = [];
+  let errorLinks: string[] = [];
   if (rootDir) {
     const command = `find ${rootDir}` + " -name '*.md' ! -path './node_modules/*' ! -path './out/*'";
     files = (await executeCommand(command)).trim().split("\n");
@@ -32,12 +32,14 @@ async function main() {
 
   for (let i = 0; i < files.length; i++) {
     const errorLinksInFile = await checkLinks(files[i]);
-    errorLinks.concat(errorLinksInFile);
+    const temp = errorLinks.concat(errorLinksInFile);
+    errorLinks = temp;
   }
 
   // Log out error message
   if (errorLinks) {
     console.log("########### Issues :( ########");
+    console.log(`[3] error links len: ${errorLinks.length}`);
     errorLinks.forEach(errorLink => {
       console.log(errorLink);
     });
@@ -68,6 +70,7 @@ async function checkLinks(file: string): Promise<string[]> {
   if (links) {
     await checkLinksCore(file, links, errorLinksInFile);
   }
+
   return errorLinksInFile;
 }
 
@@ -86,6 +89,7 @@ function checkLinksCore(file: string, links: Link[], errorLinksInFile: string[])
       } catch (error) {
         // If there's an error, log the link
         console.log(`Error: ${link.address} on line ${link.lineNumber} is not an HTTP/s or relative link.`);
+        isBroken = true;
       }
     }
 
@@ -98,6 +102,8 @@ function checkLinksCore(file: string, links: Link[], errorLinksInFile: string[])
       console.log(`Info: [${file}] ${link.address} on line ${link.lineNumber}.`);
     }
   });
+
+  console.log(`error links len: ${errorLinksInFile.length}`)
   return;
 }
 
