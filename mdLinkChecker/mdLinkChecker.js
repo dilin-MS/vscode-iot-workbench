@@ -47,57 +47,6 @@ var fs = require("fs");
 var readline = require("readline");
 var exec = require("child_process").exec;
 var args = require("yargs").argv;
-function main() {
-    return __awaiter(this, void 0, void 0, function () {
-        var rootDir, file, files, errorLinks, command, i, errorLinksInFile, i;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    rootDir = args.rootDir;
-                    file = args.file;
-                    files = [];
-                    errorLinks = [];
-                    if (!rootDir) return [3 /*break*/, 2];
-                    command = "find " + rootDir + " -name '*.md' ! -path './node_modules/*' ! -path './out/*'";
-                    return [4 /*yield*/, executeCommand(command)];
-                case 1:
-                    files = (_a.sent()).trim().split("\n");
-                    return [3 /*break*/, 3];
-                case 2:
-                    if (file) {
-                        files[0] = file;
-                    }
-                    _a.label = 3;
-                case 3:
-                    i = 0;
-                    _a.label = 4;
-                case 4:
-                    if (!(i < files.length)) return [3 /*break*/, 7];
-                    return [4 /*yield*/, checkLinks(files[i])];
-                case 5:
-                    errorLinksInFile = _a.sent();
-                    errorLinks = errorLinks.concat(errorLinksInFile);
-                    _a.label = 6;
-                case 6:
-                    i++;
-                    return [3 /*break*/, 4];
-                case 7:
-                    // Log out error message
-                    if (errorLinks.length > 0) {
-                        console.log("########### Issues :( ########");
-                        console.log("Error Links in total: " + errorLinks.length);
-                        for (i = 0; i < errorLinks.length; i++) {
-                            console.log(errorLinks[i]);
-                        }
-                        throw new Error("There are invalid links");
-                    }
-                    console.log("####################### DONE ###########################");
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-main();
 function executeCommand(command) {
     return new Promise(function (resolve, reject) {
         exec(command, function (error, stdout, stderr) {
@@ -111,52 +60,28 @@ function executeCommand(command) {
         });
     });
 }
-// Validate external urls and relative links in markdown file
-function checkLinks(file) {
-    return __awaiter(this, void 0, void 0, function () {
-        var links;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, getLinks(file)];
-                case 1:
-                    links = _a.sent();
-                    if (links.length > 0) {
-                        return [2 /*return*/, new Promise(function (resolve, reject) {
-                                checkLinksCore(file, links).then(function (fileReport) {
-                                    console.log("\n####### Checking File: " + file);
-                                    // Print all links
-                                    console.log("> All Links no: " + fileReport.all.length);
-                                    if (fileReport.all.length > 0) {
-                                        for (var i = 0; i < fileReport.all.length; i++) {
-                                            console.log(fileReport.all[i]);
-                                        }
-                                    }
-                                    // Print error links
-                                    console.log("> Error Links no: " + fileReport.errors.length);
-                                    if (fileReport.errors.length > 0) {
-                                        for (var i = 0; i < fileReport.errors.length; i++) {
-                                            console.log(fileReport.errors[i]);
-                                        }
-                                    }
-                                    resolve(fileReport.errors);
-                                });
-                            })];
-                    }
-                    else {
-                        return [2 /*return*/, new Promise(function (resolve, reject) {
-                                console.log("\n###### Checking file: " + file);
-                                console.log("No links found.");
-                                resolve([]);
-                            })];
-                    }
-                    return [2 /*return*/];
+// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+function checkBrokenLinks(url, options) {
+    return new Promise(function (resolve) {
+        brokenLink(url, options).then(function (answer) {
+            if (answer) {
+                resolve(true);
+            }
+            else {
+                resolve(false);
             }
         });
     });
 }
+// Is this a valid HTTP/S link?
+function isHttpLink(linkToCheck) {
+    // Use the validator to avoid writing URL checking logic
+    // eslint-disable-next-line  @typescript-eslint/camelcase
+    return validator.isURL(linkToCheck, { require_protocol: true, protocols: ["http", "https"] }) ? true : false;
+}
 function checkLinksCore(file, links) {
     var _this = this;
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         var fileReport = { all: [], errors: [] };
         links.forEach(function (link, index, array) { return __awaiter(_this, void 0, void 0, function () {
             var isBroken, currentWorkingDirectory, fullPath, message;
@@ -204,20 +129,8 @@ function checkLinksCore(file, links) {
         }); });
     });
 }
-function checkBrokenLinks(url, options) {
-    return new Promise(function (resolve, reject) {
-        brokenLink(url, options).then(function (answer) {
-            if (answer) {
-                resolve(true);
-            }
-            else {
-                resolve(false);
-            }
-        });
-    });
-}
 function getLinks(file) {
-    return new Promise(function (resolve, reject) {
+    return new Promise(function (resolve) {
         var rl = readline.createInterface({
             input: fs.createReadStream(file)
         });
@@ -225,8 +138,8 @@ function getLinks(file) {
         var lineNumber = 0;
         rl.on("line", function (line) {
             lineNumber++;
-            // const links = line.match(/ \[ [^\[]+ \] \( ( [^\)] +(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
-            var links = line.match(/\[[\s\S]*?\]\([\s\S]*?\)/g);
+            var links = line.match(/\[[^\[]+\]\(([^\)]+(\)[a-zA-Z0-9-]*.\w*\)|\)))|\[[a-zA-z0-9_-]+\]:\s*(\S+)/g);
+            // const links = line.match(/\[[\s\S]*?\]\([\s\S]*?\)/g);
             if (links) {
                 // console.log(`links: ${links}`);
                 for (var i = 0; i < links.length; i++) {
@@ -247,8 +160,97 @@ function getLinks(file) {
         });
     });
 }
-// Is this a valid HTTP/S link?
-function isHttpLink(linkToCheck) {
-    // Use the validator to avoid writing URL checking logic
-    return validator.isURL(linkToCheck, { require_protocol: true, protocols: ["http", "https"] }) ? true : false;
+// Validate external urls and relative links in markdown file
+function checkLinks(file) {
+    return __awaiter(this, void 0, void 0, function () {
+        var links;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, getLinks(file)];
+                case 1:
+                    links = _a.sent();
+                    if (links.length > 0) {
+                        return [2 /*return*/, new Promise(function (resolve) {
+                                checkLinksCore(file, links).then(function (fileReport) {
+                                    console.log("\n####### Checking File: " + file);
+                                    // Print all links
+                                    console.log("> All Links no: " + fileReport.all.length);
+                                    if (fileReport.all.length > 0) {
+                                        for (var i = 0; i < fileReport.all.length; i++) {
+                                            console.log(fileReport.all[i]);
+                                        }
+                                    }
+                                    // Print error links
+                                    console.log("> Error Links no: " + fileReport.errors.length);
+                                    if (fileReport.errors.length > 0) {
+                                        for (var i = 0; i < fileReport.errors.length; i++) {
+                                            console.log(fileReport.errors[i]);
+                                        }
+                                    }
+                                    resolve(fileReport.errors);
+                                });
+                            })];
+                    }
+                    else {
+                        return [2 /*return*/, new Promise(function (resolve) {
+                                console.log("\n###### Checking file: " + file);
+                                console.log("No links found.");
+                                resolve([]);
+                            })];
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
 }
+function main() {
+    return __awaiter(this, void 0, void 0, function () {
+        var rootDir, file, files, errorLinks, command, i, errorLinksInFile, i;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    rootDir = args.rootDir;
+                    file = args.file;
+                    files = [];
+                    errorLinks = [];
+                    if (!rootDir) return [3 /*break*/, 2];
+                    command = "find " + rootDir + " -name '*.md' ! -path './node_modules/*' ! -path './out/*'";
+                    return [4 /*yield*/, executeCommand(command)];
+                case 1:
+                    files = (_a.sent()).trim().split("\n");
+                    return [3 /*break*/, 3];
+                case 2:
+                    if (file) {
+                        files[0] = file;
+                    }
+                    _a.label = 3;
+                case 3:
+                    i = 0;
+                    _a.label = 4;
+                case 4:
+                    if (!(i < files.length)) return [3 /*break*/, 7];
+                    return [4 /*yield*/, checkLinks(files[i])];
+                case 5:
+                    errorLinksInFile = _a.sent();
+                    errorLinks = errorLinks.concat(errorLinksInFile);
+                    _a.label = 6;
+                case 6:
+                    i++;
+                    return [3 /*break*/, 4];
+                case 7:
+                    // Log out error message
+                    if (errorLinks.length > 0) {
+                        console.log("########### Issues :( ########");
+                        console.log("Error Links in total: " + errorLinks.length);
+                        for (i = 0; i < errorLinks.length; i++) {
+                            console.log(" " + (i + 1) + ". " + errorLinks[i]);
+                        }
+                        throw new Error("There are invalid links");
+                    }
+                    console.log("####################### DONE ###########################");
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+main();
