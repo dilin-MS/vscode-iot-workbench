@@ -36,12 +36,12 @@ steps:
     inputs:
       verbose: false
 
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: |
-        npm run validateLinks
-    displayName: 'Validate links'
+  # - task: Bash@3
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       npm run validateLinks
+  #   displayName: 'Validate links'
 
   - script: npm run check
     displayName: 'Run eslint check'
